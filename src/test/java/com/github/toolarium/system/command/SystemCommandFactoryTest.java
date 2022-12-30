@@ -58,6 +58,25 @@ public class SystemCommandFactoryTest {
 
     
     /**
+     * Test echo output
+     *
+     * @throws IOException in case of error
+     */
+    //@Test
+    public void multipleCommandsTest() throws IOException {
+        String expectedResult = "ok + ok + ok\n";
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.startsWith("windows")) {
+            expectedResult = "ok + ok + ok\n";
+
+        }
+        
+        assertEquals(StreamUtil.getInstance().convertStreamToStr(SystemCommandExecuterFactory.getInstance()
+                        .createSystemCommandExecuter().executeCommand(null, "echo ok", " + ok", " + ok").getInputStream()).replace('\r', ' '), expectedResult);
+    }
+
+
+    /**
      * Test sleep
      *
      * @throws IOException in case of error
