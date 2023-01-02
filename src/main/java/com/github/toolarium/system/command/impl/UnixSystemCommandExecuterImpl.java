@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Implements a unix based system command executer
- * <p>to proper use under linux you have to close streams: <code> my.log 2>&amp;1 &lt;/dev/zero &amp;</code></p>
+ * <p>to proper use under linux you have to close streams: <code> my.log 2&gt;&amp;1 &lt;/dev/zero &amp;</code></p>
  *
  * @author patrick
  */
