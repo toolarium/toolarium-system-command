@@ -5,7 +5,9 @@
  */
 package com.github.toolarium.system.command.impl.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,6 +50,25 @@ public final class StreamUtil {
         return HOLDER.INSTANCE;
     }
 
+    
+    /**
+     * Convert the InputStream to String we use the Reader.read(char[] buffer) method. We iterate until the Reader return -1 which means
+     * there's no more data to read.
+     *
+     * @param is the input stream
+     * @return the result
+     * @throws IOException in case of error
+     */
+    public ByteArrayOutputStream convertStreamTo(InputStream is) throws IOException {
+        if (is == null) {
+            return new ByteArrayOutputStream();
+        }
+
+        ByteArrayOutputStream dest = new ByteArrayOutputStream();
+        channelCopy(is, dest);
+        return dest;
+    }
+
 
     /**
      * Convert the InputStream to String we use the Reader.read(char[] buffer) method. We iterate until the Reader return -1 which means
@@ -62,7 +83,7 @@ public final class StreamUtil {
             return "";
         }
 
-        ByteArrayOutputStream dest = new ByteArrayOutputStream();
+        ByteArrayOutputStream dest = convertStreamTo(is);
         channelCopy(is, dest);
         return dest.toString();
     }
@@ -82,9 +103,28 @@ public final class StreamUtil {
             return "";
         }
 
-        ByteArrayOutputStream dest = new ByteArrayOutputStream();
+        ByteArrayOutputStream dest = convertStreamTo(is);
         channelCopy(is, dest);
         return dest.toString(charsetName);
+    }
+
+    
+    /**
+     * Convert the InputStream to String we use the Reader.read(char[] buffer) method. We iterate until the Reader return -1 which means
+     * there's no more data to read.
+     *
+     * @param is the input stream
+     * @return the result
+     * @throws IOException in case of error
+     */
+    public InputStream convertStreamToNewInputStream(InputStream is) throws IOException {
+        if (is == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream dest = convertStreamTo(is);
+        channelCopy(is, dest);
+        return new ByteArrayInputStream(dest.toByteArray());
     }
 
     
@@ -136,5 +176,21 @@ public final class StreamUtil {
         }
         
         return size;
+    }
+    
+
+    /**
+     * Close silent a stream
+     *
+     * @param closeable close
+     */
+    public void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                // NOP
+            }
+        }
     }
 }

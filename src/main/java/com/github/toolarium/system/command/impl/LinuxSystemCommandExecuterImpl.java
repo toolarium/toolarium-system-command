@@ -5,48 +5,23 @@
  */
 package com.github.toolarium.system.command.impl;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.github.toolarium.system.command.IProcessEnvironment;
+import com.github.toolarium.system.command.ISystemCommand;
 
 /**
  * Implements a linux based system command executer
  *
  * @author patrick
  */
-public class LinuxSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
-    private String shell;
-    
+public class LinuxSystemCommandExecuterImpl extends UnixSystemCommandExecuterImpl {
     
     /**
      * Constructor for LinuxSystemCommandExecuterImpl
+     *
+     * @param processEnvironment the process environment
+     * @param systemCommand the system command
      */
-    public LinuxSystemCommandExecuterImpl() {
-        shell = "sh";
-    }
-
-    
-    /**
-     * Constructor for LinuxSystemCommandExecuterImpl
-     * 
-     * @param shell the used shell
-     */
-    public LinuxSystemCommandExecuterImpl(String shell) {
-        this.shell = shell;
-    }
-
-    
-    /**
-     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#preparePlatformDependentCommandList(java.lang.String, java.util.List)
-     */
-    @Override
-    protected List<String> preparePlatformDependentCommandList(String osName, List<String> commandList) {
-        List<String> commandParameterList = new ArrayList<String>();
-        commandParameterList.add(shell);
-        commandParameterList.add("-c");
-        commandParameterList.addAll(commandList);
-        // to proper use under linux you have to close streams: > my.log 2>&1 </dev/zero &
-        return commandParameterList;
+    public LinuxSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
+        super(processEnvironment, systemCommand);
     }
 }

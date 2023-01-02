@@ -39,7 +39,7 @@ public final class SystemCommandFactory {
         return HOLDER.INSTANCE;
     }
 
-
+    
     /**
      * Create a sleep command
      *

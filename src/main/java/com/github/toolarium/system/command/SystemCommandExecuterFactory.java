@@ -52,40 +52,23 @@ public final class SystemCommandExecuterFactory {
     /**
      * Create a system command executer
      *
+     * @param processEnvironment the process environment
+     * @param systemCommand the system command
      * @return the system command executer
      */
-    public SystemCommandExecuter createSystemCommandExecuter() {
-        return createSystemCommandExecuter(null);
-    }
-
-
-    /**
-     * Create a system command executer
-     *
-     * @param shell the used shell
-     * @return the system command executer
-     */
-    public SystemCommandExecuter createSystemCommandExecuter(String shell) {
+    public ISystemCommandExecuter createSystemCommandExecuter(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.startsWith("windows")) {
             
             LOG.debug("Choose " + WindowsSystemCommandExecuterImpl.class.getName() + " as executer.");
-            return new WindowsSystemCommandExecuterImpl();
+            return new WindowsSystemCommandExecuterImpl(processEnvironment, systemCommand);
         } else if (osName.startsWith("linux")) {
             
             LOG.debug("Choose " + LinuxSystemCommandExecuterImpl.class.getName() + " as executer.");
-            if (shell == null || shell.isBlank()) {
-                return new LinuxSystemCommandExecuterImpl();
-            } else {
-                return new LinuxSystemCommandExecuterImpl(shell);
-            }
+            return new LinuxSystemCommandExecuterImpl(processEnvironment, systemCommand);
         }
 
         LOG.debug("Choose " + UnixSystemCommandExecuterImpl.class.getName() + " as executer.");
-        if (shell == null || shell.isBlank()) {
-            return new UnixSystemCommandExecuterImpl();
-        } else {
-            return new UnixSystemCommandExecuterImpl(shell);
-        }
+        return new UnixSystemCommandExecuterImpl(processEnvironment, systemCommand);
     }
 }

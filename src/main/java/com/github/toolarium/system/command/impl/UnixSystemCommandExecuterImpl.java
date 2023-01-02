@@ -5,44 +5,40 @@
  */
 package com.github.toolarium.system.command.impl;
 
-import java.util.ArrayList;
+import com.github.toolarium.system.command.IProcessEnvironment;
+import com.github.toolarium.system.command.ISystemCommand;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Implements a unix based system command executer
+ * <p>to proper use under linux you have to close streams: <code> my.log 2>&amp;1 &lt;/dev/zero &amp;</code></p>
  *
  * @author patrick
  */
 public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
-    private String shell;
-    
     
     /**
-     * Constructor for UnixSystemCommandExecuterImpl
+     * Constructor for WindowsSystemCommandExecuterImpl
+     *
+     * @param processEnvironment the process environment
+     * @param systemCommand the system command
      */
-    public UnixSystemCommandExecuterImpl() {
-        shell = "sh";
+    public UnixSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
+        super(processEnvironment, systemCommand);
     }
 
     
     /**
-     * Constructor for UnixSystemCommandExecuterImpl
-     * 
-     * @param shell the used shell
-     */
-    public UnixSystemCommandExecuterImpl(String shell) {
-        this.shell = shell;
-    }
-    
-    /**
-     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#preparePlatformDependentCommandList(java.lang.String, java.util.List)
+     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#getShellCommand(com.github.toolarium.system.command.IProcessEnvironment, com.github.toolarium.system.command.ISystemCommand)
      */
     @Override
-    protected List<String> preparePlatformDependentCommandList(String osName, List<String> commandList) {
-        List<String> commandParameterList = new ArrayList<String>();
-        commandParameterList.add(shell);
-        commandParameterList.add("-c");
-        commandParameterList.addAll(commandList);
-        return commandParameterList;
+    protected List<String> getShellCommand(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
+        
+        if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
+            return Arrays.asList("sh", "-c");
+        }
+
+        return systemCommand.getShell();
     }
 }

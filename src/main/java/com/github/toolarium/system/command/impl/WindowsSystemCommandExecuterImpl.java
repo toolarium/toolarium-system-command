@@ -6,31 +6,44 @@
 package com.github.toolarium.system.command.impl;
 
 
-import java.util.ArrayList;
+import com.github.toolarium.system.command.IProcessEnvironment;
+import com.github.toolarium.system.command.ISystemCommand;
+import java.util.Arrays;
 import java.util.List;
 
 
 /**
- * Implements a linux based system command executer
+ * Implements a windows based system command executer
  *
  * @author patrick
  */
 public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
+
     /**
-     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#preparePlatformDependentCommandList(java.lang.String, java.util.List)
+     * Constructor for WindowsSystemCommandExecuterImpl
+     *
+     * @param processEnvironment the process environment
+     * @param systemCommand the system command
+     */
+    public WindowsSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
+        super(processEnvironment, systemCommand);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#getShellCommand(com.github.toolarium.system.command.IProcessEnvironment, com.github.toolarium.system.command.ISystemCommand)
      */
     @Override
-    protected List<String> preparePlatformDependentCommandList(String osName, List<String> commandList) {
-        List<String> commandParameterList = new ArrayList<String>();
-        if (osName.equals("Windows 95")) {
-            commandParameterList.add("command.com");
-            commandParameterList.add("/C");
-        } else {
-            commandParameterList.add("cmd.exe");
-            commandParameterList.add("/c");
+    protected List<String> getShellCommand(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
+        
+        if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
+            if (processEnvironment.getOS().equalsIgnoreCase("Windows 95")) {
+                return Arrays.asList("command.com", "/C");
+            } else {
+                return Arrays.asList("cmd.exe", "/c");
+            }
         }
 
-        commandParameterList.addAll(commandList);
-        return commandParameterList;
+        return systemCommand.getShell();
     }
 }
