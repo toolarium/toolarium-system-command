@@ -6,8 +6,9 @@
 package com.github.toolarium.system.command.impl;
 
 
-import com.github.toolarium.system.command.IProcessEnvironment;
 import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.SystemCommand;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,28 +23,135 @@ public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecu
     /**
      * Constructor for WindowsSystemCommandExecuterImpl
      *
-     * @param processEnvironment the process environment
-     * @param systemCommand the system command
+     * @param systemCommandList the system command list
      */
-    public WindowsSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
-        super(processEnvironment, systemCommand);
+    public WindowsSystemCommandExecuterImpl(List<? extends ISystemCommand> systemCommandList) {
+        super(systemCommandList);
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.impl.AbstractSystemCommandExecuterImpl#getShellCommand(com.github.toolarium.system.command.IProcessEnvironment, com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getShellCommand(com.github.toolarium.system.command.ISystemCommand)
      */
     @Override
-    protected List<String> getShellCommand(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
-        
-        if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
-            if (processEnvironment.getOS().equalsIgnoreCase("Windows 95")) {
-                return Arrays.asList("command.com", "/C");
-            } else {
-                return Arrays.asList("cmd.exe", "/c");
-            }
+    public List<String> getShellCommand(ISystemCommand systemCommand) {
+        List<String> cmdList = new ArrayList<>();
+        String currentUser = System.getProperty("user.name").trim();
+        if (systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank() && !currentUser.equals(systemCommand.getProcessEnvironment().getUser().trim())) {
+            cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
         }
 
-        return systemCommand.getShell();
+        if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
+            if (systemCommand.getProcessEnvironment() != null 
+                && systemCommand.getProcessEnvironment().getOS() != null
+                && systemCommand.getProcessEnvironment().getOS().equalsIgnoreCase("Windows 95")) {
+                cmdList.addAll(Arrays.asList("command.com", "/C"));
+            } else {
+                cmdList.addAll(Arrays.asList("cmd.exe", "/c"));
+            }
+        } else {
+            cmdList.addAll(systemCommand.getShell());
+        }
+
+        return cmdList;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileExtension()
+     */
+    @Override
+    public String getScriptFileExtension() {
+        return ".bat";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileHeader()
+     */
+    @Override
+    public String getScriptFileHeader() {
+        return "@ECHO OFF";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileFooter()
+     */
+    @Override
+    public String getScriptFileFooter() {
+        return "";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileComment()
+     */
+    @Override
+    public String getScriptFileComment() {
+        return "::";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentSetCommand()
+     */
+    @Override
+    public String getEnvironmentSetCommand() {
+        return "SET" + SystemCommand.SPACE + "\"";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentUnsetCommand()
+     */
+    @Override
+    public String getEnvironmentUnsetCommand() {
+        return getEnvironmentSetCommand();
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentChangeDirectoryCommand()
+     */
+    @Override
+    public String getEnvironmentChangeDirectoryCommand() {
+        return "cd /d" + SystemCommand.SPACE;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommand()
+     */
+    @Override
+    public String getEnvironmentAssignCommand() {
+        return "=";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommandEnd()
+     */
+    @Override
+    public String getEnvironmentAssignCommandEnd() {
+        return "\"";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEndOfLine()
+     */
+    @Override
+    public String getEndOfLine() {
+        return "\r\n";
+    }
+    
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getSudo(java.lang.String)
+     */
+    @Override
+    public List<String> getSudo(String username) {
+        return Arrays.asList("runas", "/user", "\"" + username + "\"", "/savecred"); 
     }
 }

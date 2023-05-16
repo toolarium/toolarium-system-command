@@ -7,9 +7,12 @@ package com.github.toolarium.system.command.dto;
 
 
 import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.process.env.IProcessEnvironment;
+import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 
 /**
  * Implements the {@link ISystemCommand}.
@@ -20,20 +23,34 @@ public class SystemCommand implements ISystemCommand {
     /** SPACE */
     public static final String SPACE = " ";
 
+    private IProcessEnvironment processEnvironment;
     private List<String> shell;
     private List<String> commandList;
     private StringBuilder command;
     private StringBuilder displayCommand;
-    
+    private IProcessOutputStream processOutputStream;
+    private IProcessOutputStream errorProcessOutputStream;
     
     /**
      * Constructor for SystemCommand
+     * 
+     * @param processEnvironment the process environment
      */
-    public SystemCommand() {
-        shell = null;
-        commandList = new ArrayList<>();
-        command = new StringBuilder();
-        displayCommand = new StringBuilder();
+    public SystemCommand(IProcessEnvironment processEnvironment) {
+        this.processEnvironment = processEnvironment;
+        this.shell = null;
+        this.commandList = new ArrayList<>();
+        this.command = new StringBuilder();
+        this.displayCommand = new StringBuilder();
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommand#getProcessEnvironment()
+     */
+    @Override
+    public IProcessEnvironment getProcessEnvironment() {
+        return processEnvironment;
     }
 
     
@@ -55,7 +72,7 @@ public class SystemCommand implements ISystemCommand {
         this.shell = shell;
     }
     
-    
+
     /**
      * @see com.github.toolarium.system.command.ISystemCommand#getCommandList()
      */
@@ -98,7 +115,7 @@ public class SystemCommand implements ISystemCommand {
      *
      * @param commandList the command list
      */
-    public void setCommandList(List<String> commandList) {
+    protected void setCommandList(List<String> commandList) {
         this.commandList = commandList;
     }
     
@@ -108,7 +125,7 @@ public class SystemCommand implements ISystemCommand {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(shell, command, commandList, displayCommand);
+        return Objects.hash(processEnvironment, processOutputStream, errorProcessOutputStream, shell, command, commandList, displayCommand);
     }
 
 
@@ -130,7 +147,21 @@ public class SystemCommand implements ISystemCommand {
         }
         
         SystemCommand other = (SystemCommand) obj;
-        return Objects.equals(shell, other.shell) && Objects.equals(command, other.command) && Objects.equals(commandList, other.commandList) && Objects.equals(displayCommand, other.displayCommand);
+        return Objects.equals(processEnvironment, other.processEnvironment)
+                && Objects.equals(processOutputStream, other.processOutputStream)
+                && Objects.equals(errorProcessOutputStream, other.errorProcessOutputStream)
+                && Objects.equals(shell, other.shell)
+                && Objects.equals(command, other.command) && Objects.equals(commandList, other.commandList)
+                && Objects.equals(displayCommand, other.displayCommand);
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommand#toString(boolean)
+     */
+    @Override
+    public String toString() {
+        return toString(true);
     }
 
 

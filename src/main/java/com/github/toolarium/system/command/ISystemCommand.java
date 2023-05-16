@@ -1,11 +1,13 @@
 /*
- * ICommand.java
+ * ISystemCommand.java
  *
  * Copyright by toolarium, all rights reserved.
  */
 package com.github.toolarium.system.command;
 
+import com.github.toolarium.system.command.process.env.IProcessEnvironment;
 import java.util.List;
+
 
 /**
  * The command
@@ -14,6 +16,14 @@ import java.util.List;
  */
 public interface ISystemCommand {
 
+    /**
+     * Get the process environment
+     * 
+     * @return the process environment
+     */
+    IProcessEnvironment getProcessEnvironment();
+    
+    
     /**
      * The shell to execute.
      *

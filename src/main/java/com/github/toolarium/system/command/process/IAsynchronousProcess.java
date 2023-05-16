@@ -3,9 +3,11 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.process;
 
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * Defines an asynchronous process
@@ -64,6 +66,15 @@ public interface IAsynchronousProcess extends IProcess {
      */
     void destroy();
 
+    
+    /**
+     * Returns the output stream connected to the process input stream. 
+     * If the standard input of the process has been redirected, the stream is not available.
+     *
+     * @return the input stream
+     */
+    OutputStream getInputStream();
+    
        
     /**
      * Get the process handle.
@@ -71,4 +82,10 @@ public interface IAsynchronousProcess extends IProcess {
      * @return the process handle
      */
     ProcessHandle getProcessHandle();
+    
+    
+    /**
+     * Close and cleanup the process. If the process is not finalised the close wait until the process is finished.
+     */
+    void close();
 }

@@ -5,29 +5,29 @@
  */
 package com.github.toolarium.system.command;
 
-import com.github.toolarium.system.command.dto.ProcessEnvironment;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.process.env.dto.ProcessEnvironment;
+import java.io.File;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
 
 /**
+ * The system command executer builder
  * 
  * @author patrick
  */
 public final class SystemCommandExecuterBuilder {
-    private static final String SPACE = " ";
-    private ProcessEnvironment processEnvironment;
-    private SystemCommand systemCommand;
+    private LinkedList<SystemCommand> systemCommandList;
 
 
     /**
      * Constructor for SystemCommandExecuterBuilder
      */
     private SystemCommandExecuterBuilder() {
-        processEnvironment = new ProcessEnvironment();
-        systemCommand = new SystemCommand();
+        systemCommandList = new LinkedList<>();
     }
 
 
@@ -37,9 +37,31 @@ public final class SystemCommandExecuterBuilder {
      * @return the builder
      */
     public static SystemCommandExecuterBuilder create() {
-        return new SystemCommandExecuterBuilder();
+        return new SystemCommandExecuterBuilder().addSystemCommand();
     }
+
     
+    /**
+     * Add a new system command
+     * 
+     * @return the system command executer builder
+     */
+    public SystemCommandExecuterBuilder addSystemCommand() {
+        systemCommandList.add(new SystemCommand(new ProcessEnvironment()));
+        return this;
+    }
+
+    
+    /**
+     * Add a new jvm / java system command
+     * 
+     * @param main the java main class
+     * @return the jvm / java system command executer builder
+     */
+    public JavaSystemCommandExecuterBuilder addJVMSystemCommand(String main) {
+        return new JavaSystemCommandExecuterBuilder(this).main(main);
+    }
+
     
     /**
      * Set the shell
@@ -48,11 +70,11 @@ public final class SystemCommandExecuterBuilder {
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder shell(String... shell) {
-        systemCommand.setShell(Arrays.asList(shell));
+        getCurrentSystemCommand().setShell(Arrays.asList(shell));
         return this;
     }
 
-    
+
     /**
      * Set the user
      *
@@ -60,7 +82,7 @@ public final class SystemCommandExecuterBuilder {
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder user(String user) {
-        processEnvironment.setUser(user);
+        getCurrentProcessEnvironment().setUser(user);
         return this;
     }
     
@@ -72,7 +94,7 @@ public final class SystemCommandExecuterBuilder {
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder workingPath(String workingPath) {
-        processEnvironment.setWorkingPath(workingPath);
+        getCurrentProcessEnvironment().setWorkingPath(new File(workingPath).getAbsolutePath());
         return this;
     }
 
@@ -83,10 +105,11 @@ public final class SystemCommandExecuterBuilder {
      * @param os the os
      * @return the system command executer builder
     public SystemCommandExecuterBuilder os(String os) {
-        processEnvironment.setOS(os);
+        if (!getCurrentProcessEnvironment().getOS().equals(os)) {
+        }
         return this;
     }
-    */
+     */
 
     
     /**
@@ -95,7 +118,7 @@ public final class SystemCommandExecuterBuilder {
      * @param os the os version
      * @return the system command executer builder
     public SystemCommandExecuterBuilder osVersion(String osVersion) {
-        processEnvironment.setOSversion(osVersion);
+        getCurrentProcessEnvironment().setOSversion(osVersion);
         return this;
     }
     */
@@ -107,7 +130,7 @@ public final class SystemCommandExecuterBuilder {
      * @param architecture the architecture
      * @return the system command executer builder
     public SystemCommandExecuterBuilder architecture(String architecture) {
-        processEnvironment.setArchitecture(architecture);
+        getCurrentProcessEnvironment().setArchitecture(architecture);
         return this;
     }
     */
@@ -121,15 +144,15 @@ public final class SystemCommandExecuterBuilder {
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder environmentVariable(String key, String value) {
-        processEnvironment.getEnvironmentVariables().put(key, value);
+        getCurrentProcessEnvironment().getEnvironmentVariables().put(key, value);
         return this;
     }
 
     
     /**
-     * Add an additional part of the command 
+     * Add a new command 
      *
-     * @param command the additional part of the command
+     * @param command the command to add
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder addToCommand(String command) {
@@ -138,14 +161,14 @@ public final class SystemCommandExecuterBuilder {
 
     
     /**
-     * Add an additional part of the command 
+     * Add a new command 
      *
-     * @param command the additional part of the command
-     * @param displayCommand the additional part of the command to display
+     * @param command the command to add
+     * @param displayCommand the command to add as display
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder addToCommand(String command, String displayCommand) {
-        systemCommand.add(command, displayCommand);
+        getCurrentSystemCommand().add(command, displayCommand);
         return this;
     }
 
@@ -159,10 +182,10 @@ public final class SystemCommandExecuterBuilder {
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder addToCommand(final Map<String, String> keyValueSettings, final String keyPrefix, final boolean escapeValue) {
-        return addToCommand(keyValueSettings, keyPrefix, escapeValue);
+        return addToCommand(keyValueSettings, keyPrefix, escapeValue, null);
     }
 
-    
+
     /**
      * Add an additional part of the command, e.g. java properties
      *
@@ -177,14 +200,34 @@ public final class SystemCommandExecuterBuilder {
         return this;
     }
 
-
+    
     /**
      * Build the system executer
      *
      * @return the system executer
      */
     public ISystemCommandExecuter build() {
-        return SystemCommandExecuterFactory.getInstance().createSystemCommandExecuter(processEnvironment, systemCommand);
+        return SystemCommandExecuterFactory.getInstance().createSystemCommandExecuter(systemCommandList);
+    }
+
+    
+    /**
+     * Get the current system command
+     * 
+     * @return the current system command 
+     */
+    protected SystemCommand getCurrentSystemCommand() {
+        return systemCommandList.getLast();
+    }
+
+    
+    /**
+     * Get the current system command
+     * 
+     * @return the system command 
+     */
+    protected ProcessEnvironment getCurrentProcessEnvironment() {
+        return (ProcessEnvironment)getCurrentSystemCommand().getProcessEnvironment();
     }
 
     
@@ -203,7 +246,7 @@ public final class SystemCommandExecuterBuilder {
         int i = 0;
         for (Map.Entry<String, String> e : map.entrySet()) {
             if (i > 0) {
-                builder.append(SPACE);
+                builder.append(SystemCommand.SPACE);
             }
 
             if (keyPrefix != null && !keyPrefix.isBlank()) {

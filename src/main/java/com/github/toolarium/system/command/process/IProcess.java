@@ -3,12 +3,12 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.process;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.github.toolarium.system.command.ISystemCommand;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 
 /**
@@ -19,19 +19,11 @@ import java.time.Instant;
 public interface IProcess {
     
     /**
-     * Get the process environment
-     * 
-     * @return the process environment
-     */
-    IProcessEnvironment getProcessEnvironment();
-
-    
-    /**
-     * Get the system command of the process.
+     * Get the system command list.
      *
-     * @return the system command of this process
+     * @return the system command list of this process
      */
-    ISystemCommand getSystemCommand();
+    List<? extends ISystemCommand> getSystemCommandList();
 
         
     /**
@@ -42,30 +34,6 @@ public interface IProcess {
     Long getPid();
 
     
-    /**
-     * Get the standard input stream connected the process. 
-     *
-     * @return the standard input stream connected to the process
-     */
-    OutputStream getInputStream();
-
-    
-    /**
-     * Get the standard output stream connected the process. 
-     *
-     * @return the standard output stream connected to the process
-     */
-    InputStream getOutputStream();
-
-    
-    /**
-     * Get the standard error stream connected the process. 
-     *
-     * @return the error stream connected to the process
-     */
-    InputStream getErrorStream();
-
-
     /**
      * Get the start time of the process.
      *

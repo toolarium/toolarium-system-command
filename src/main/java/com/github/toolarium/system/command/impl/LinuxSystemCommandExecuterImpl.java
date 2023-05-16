@@ -5,8 +5,9 @@
  */
 package com.github.toolarium.system.command.impl;
 
-import com.github.toolarium.system.command.IProcessEnvironment;
 import com.github.toolarium.system.command.ISystemCommand;
+import java.util.List;
+
 
 /**
  * Implements a linux based system command executer
@@ -18,10 +19,9 @@ public class LinuxSystemCommandExecuterImpl extends UnixSystemCommandExecuterImp
     /**
      * Constructor for LinuxSystemCommandExecuterImpl
      *
-     * @param processEnvironment the process environment
-     * @param systemCommand the system command
+     * @param systemCommandList the system command list
      */
-    public LinuxSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
-        super(processEnvironment, systemCommand);
+    public LinuxSystemCommandExecuterImpl(List<? extends ISystemCommand> systemCommandList) {
+        super(systemCommandList);
     }
 }

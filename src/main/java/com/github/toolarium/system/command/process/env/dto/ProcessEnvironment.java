@@ -3,9 +3,10 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.dto;
+package com.github.toolarium.system.command.process.env.dto;
 
-import com.github.toolarium.system.command.IProcessEnvironment;
+import com.github.toolarium.system.command.process.env.IProcessEnvironment;
+import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
                 
         workingPath = ".";
         if (System.getProperty("user.dir") != null) {
-            workingPath = System.getProperty("user.dir").trim();
+            workingPath = new File(System.getProperty("user.dir").trim()).getPath();
         }
 
         environmentVariables = new HashMap<>();
@@ -47,7 +48,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getUser()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getUser()
      */
     @Override
     public String getUser() {
@@ -66,7 +67,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getWorkingPath()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getWorkingPath()
      */
     @Override
     public String getWorkingPath() {
@@ -77,15 +78,15 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     /**
      * Set the working path
      * 
-     * @param workingPath the working oath
+     * @param workingPath the working path
      */
-    public void setWorkingPath(String workingPath) {
+    public void setWorkingPath(String workingPath) {        
         this.workingPath = workingPath;
     }
 
-
+        
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getEnvironmentVariables()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getEnvironmentVariables()
      */
     @Override
     public Map<String, String> getEnvironmentVariables() {
@@ -94,7 +95,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getEnvironmentVariable(java.lang.String)
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getEnvironmentVariable(java.lang.String)
      */
     @Override
     public String getEnvironmentVariable(String key) {
@@ -123,7 +124,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
     
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getOS()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getOS()
      */
     @Override
     public String getOS() {
@@ -132,7 +133,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getOSVersion()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getOSVersion()
      */
     @Override
     public String getOSVersion() {
@@ -141,7 +142,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.IProcessEnvironment#getArchitecture()
+     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getArchitecture()
      */
     @Override
     public String getArchitecture() {

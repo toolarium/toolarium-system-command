@@ -5,21 +5,31 @@
  */
 package com.github.toolarium.system.command.impl;
 
-import com.github.toolarium.system.command.IAsynchronousProcess;
-import com.github.toolarium.system.command.IProcess;
-import com.github.toolarium.system.command.IProcessEnvironment;
 import com.github.toolarium.system.command.ISystemCommand;
 import com.github.toolarium.system.command.ISystemCommandExecuter;
-import com.github.toolarium.system.command.dto.AsynchrounousProcess;
-import com.github.toolarium.system.command.dto.Process;
-import com.github.toolarium.system.command.dto.SystemCommand;
-import com.github.toolarium.system.command.impl.util.StreamUtil;
+import com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport;
+import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.process.IAsynchronousProcess;
+import com.github.toolarium.system.command.process.ISynchronousProcess;
+import com.github.toolarium.system.command.process.dto.AsynchronousProcess;
+import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.dto.SynchronousProcess;
+import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
+import com.github.toolarium.system.command.process.liveness.impl.ProcessLiveness;
+import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.impl.ProcessOutputStream;
+import com.github.toolarium.system.command.process.thread.NameableThreadFactory;
+import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
+import java.lang.ProcessBuilder.Redirect;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,23 +40,23 @@ import org.slf4j.LoggerFactory;
  *
  * @author patrick
  */
-public abstract class AbstractSystemCommandExecuterImpl implements ISystemCommandExecuter {
+public abstract class AbstractSystemCommandExecuterImpl implements ISystemCommandExecuter, ISystemCommandExecuterPlatformSupport {
+    /** The default poll timeout */    
+    public static final int DEFAULT_POLL_TIMEOUT = 5;
+    
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSystemCommandExecuterImpl.class);
-    private IProcessEnvironment processEnvironment;
-    private ISystemCommand systemCommand;
-    private String commandId;
+    private static NameableThreadFactory nameableThreadFactory = new NameableThreadFactory("liveness");
+    
+    private PlatformDependentSystemCommand platformDependentSystemCommand;
 
     
     /**
      * Constructor for AbstractSystemCommandExecuterImpl
      *
-     * @param processEnvironment the process environment
-     * @param systemCommand the system command
+     * @param systemCommandList the system command list
      */
-    protected AbstractSystemCommandExecuterImpl(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
-        this.processEnvironment = processEnvironment;
-        this.systemCommand = systemCommand;
-        this.commandId = null;
+    protected AbstractSystemCommandExecuterImpl(List<? extends ISystemCommand> systemCommandList) {
+        this.platformDependentSystemCommand = preparePlatformDependentCommandList(systemCommandList); 
     }
 
     
@@ -54,7 +64,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      * @see com.github.toolarium.system.command.ISystemCommandExecuter#runSynchronous()
      */
     @Override
-    public IProcess runSynchronous() {
+    public ISynchronousProcess runSynchronous() {
         return runSynchronous(0);
     }
 
@@ -63,74 +73,69 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      * @see com.github.toolarium.system.command.ISystemCommandExecuter#runSynchronous(int)
      */
     @Override
-    public IProcess runSynchronous(int numberOfSecondsToWait) {
-        IAsynchronousProcess asynchronousProcess = runAsynchronous();
-        String commandIdStr = "(id:" + commandId + ")";
+    public ISynchronousProcess runSynchronous(int numberOfSecondsToWait) {
+        return runSynchronous(null, numberOfSecondsToWait);
+    }
 
-        StringBuilder message = new StringBuilder("Command " + commandIdStr + SystemCommand.SPACE + systemCommand.getCommandList() + SystemCommand.SPACE);
 
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, int)
+     */
+    @Override
+    public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait) {
+        return runSynchronous(processInputStreamSource, numberOfSecondsToWait, DEFAULT_POLL_TIMEOUT);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, int, long)
+     */
+    @Override
+    public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait, long pollTimeout) {
+        
         // to capture output from the shell
-        InputStream outputMessage = null;
-        InputStream errorMessage = null;
-
+        ProcessBufferOutputStream outputstream = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream errorOutputstream = new ProcessBufferOutputStream();        
+        IAsynchronousProcess asynchronousProcess = runAsynchronous(processInputStreamSource, outputstream, errorOutputstream, pollTimeout);
+        StringBuilder processInfo = new StringBuilder(" (id:" + prepareCommandId() + ", pid:" + asynchronousProcess.getPid());
+        
         int exitValue = -1;
         try {
             if (numberOfSecondsToWait <= 0) {
                 exitValue = asynchronousProcess.waitFor();
-                
-                if (LOG.isDebugEnabled()) {
-                    message.append("ended.");
-                    LOG.debug(message.toString());
-                }
+                LOG.info(new StringBuilder("Process ").append("ended").append(processInfo).append(", exit:").append(exitValue).append(", duration:").append(prepareDuration(asynchronousProcess)).append(")").toString());
             } else {
                 if (asynchronousProcess.waitFor(numberOfSecondsToWait, TimeUnit.SECONDS)) {
                     exitValue = asynchronousProcess.getExitValue();
-                    
-                    if (LOG.isDebugEnabled()) {
-                        message.append("ended in time.");
-                        LOG.debug(message.toString());
-                    }
+                    LOG.info(new StringBuilder("Process ").append("ended in time").append(processInfo).append(", exit:").append(exitValue).append(", duration:").append(prepareDuration(asynchronousProcess)).append(")").toString());
                 } else {
+                    StringBuilder message = new StringBuilder("Process ");
                     asynchronousProcess.tryDestroy();
                     if (asynchronousProcess.isAlive()) {
                         asynchronousProcess.destroy();
+                        message.append("forced aborted");
+                    } else {
+                        message.append("aborted");
                     }
-                    
+
                     exitValue = asynchronousProcess.getExitValue();
-                    message.append("stopped execution (timeout " + numberOfSecondsToWait + ")!");
-                    LOG.info(message.toString());
+                    LOG.info(message.append(", timeout:" + numberOfSecondsToWait).append(processInfo).append(", exit:").append(exitValue).append(", duration:").append(prepareDuration(asynchronousProcess)).append(")!").toString());
                 }
             }
         } catch (InterruptedException ex) {
-            message.append("ended with error: ");
-            message.append(ex.getMessage());
+            StringBuilder message = new StringBuilder("Process ").append("ended with error").append(processInfo).append(", duration:").append(prepareDuration(asynchronousProcess)).append("): ").append(ex.getMessage());
             if (LOG.isDebugEnabled()) {
                 LOG.debug(message.toString(), ex);
             }
             
             LOG.warn(message.toString());
-        } finally {
-            // to capture output from the shell
-            try {
-                outputMessage = StreamUtil.getInstance().convertStreamToNewInputStream(asynchronousProcess.getOutputStream());
-            } catch (IOException e) {
-                LOG.debug("Could not read standard out of process #" + asynchronousProcess.getPid() + ": " + e.getMessage());
-                LOG.warn("Could not read standard out of process #" + asynchronousProcess.getPid() + ": " + e.getMessage());
-            }
-            try {
-                errorMessage = StreamUtil.getInstance().convertStreamToNewInputStream(asynchronousProcess.getErrorStream());
-            } catch (IOException e) {
-                LOG.debug("Could not read standard error of process #" + asynchronousProcess.getPid() + ": " + e.getMessage());
-                LOG.warn("Could not read standard error of process #" + asynchronousProcess.getPid() + ": " + e.getMessage());
-            }
-
-            StreamUtil.getInstance().close(asynchronousProcess.getInputStream());
-            StreamUtil.getInstance().close(asynchronousProcess.getOutputStream());
-            StreamUtil.getInstance().close(asynchronousProcess.getErrorStream());
         }
 
-        return new Process(processEnvironment, asynchronousProcess.getSystemCommand(), asynchronousProcess.getPid(), asynchronousProcess.getStartTime(), asynchronousProcess.getTotalCpuDuration(),
-                           exitValue, null, outputMessage, errorMessage);
+        return new SynchronousProcess(platformDependentSystemCommand, 
+                                      asynchronousProcess.getPid(), 
+                                      asynchronousProcess.getStartTime(), asynchronousProcess.getTotalCpuDuration(),
+                                      exitValue, 
+                                      outputstream.toString(), errorOutputstream.toString());
     }
 
 
@@ -139,161 +144,165 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      */
     @Override
     public IAsynchronousProcess runAsynchronous() {
-        validateProcessEnvironment(processEnvironment);
-        validateSystemCommand(systemCommand);
+        return runAsynchronous(null, new ProcessOutputStream(System.out), new ProcessOutputStream(System.err));
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, 
+     *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
+     */
+    @Override
+    public IAsynchronousProcess runAsynchronous(ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr) {
+        return runAsynchronous(processInputStreamSource, processOut, processErr, DEFAULT_POLL_TIMEOUT);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, 
+     *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream, long)
+     */
+    @Override
+    public IAsynchronousProcess runAsynchronous(ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr, long pollTimeout) {
+        platformDependentSystemCommand.validate();
 
         // create process builder
-        PlatformDependentCommand platformDependentCommand = preparePlatformDependentCommandList(processEnvironment, systemCommand);
-        commandId = platformDependentCommand.getCommandId();
-        ProcessBuilder processBuilder = createProcessBuilder(platformDependentCommand);
-        // TODO: processBuilder.redirectErrorStream(true);
+        ProcessBuilder processBuilder = ProcessBuilderUtil.getInstance().createProcessBuilder(platformDependentSystemCommand, this);
         
-        java.lang.Process process = null;
+        // prepare streams
+        setPrcoessInputStreamSource(processBuilder, processInputStreamSource, processOut, processErr);
+        
+        IProcessLiveness processLiveness = null;
         try {
-            String pathInfo = " in current path.";
+            LOG.debug("Start command (id:" + prepareCommandId() + ") in path [" + processBuilder.directory().getAbsolutePath() + "]: \n" + platformDependentSystemCommand.toString());
+            
+            // start process
+            java.lang.Process process = processBuilder.start();
 
-            if (processEnvironment.getWorkingPath() != null) {
-                // System.getProperty("user.home")
-                processBuilder.directory(new File(processEnvironment.getWorkingPath()));
-                pathInfo = " in path [" + processEnvironment.getWorkingPath() + "].";
+            // start liveness thread
+            processLiveness = new ProcessLiveness(process, processOut, processErr, pollTimeout);
+            Executors.newSingleThreadExecutor(nameableThreadFactory).execute(processLiveness);
+            
+            boolean scriptExecution = platformDependentSystemCommand.getSystemCommandList().size() > 1; 
+            if (scriptExecution) {
+                // create pid file
+                File pidFile = new File(platformDependentSystemCommand.getTempPath() + "/" + platformDependentSystemCommand.getCommandId() + ".pid");
+                pidFile.createNewFile();
+                writeToFile(pidFile.toPath(), "" + process.pid());
             }
-
-            String commandIdStr = "(id:" + commandId + ")";
-            LOG.debug("Start command " + commandIdStr + ": [" + platformDependentCommand.toString() + "]" + pathInfo);
-            process = processBuilder.start();
-            LOG.debug("Process successful started " + commandIdStr + ", pid: " + process.pid());
+            
+            LOG.info("Process successful started (id:" + prepareCommandId() + ", pid:" + process.pid() + ", script:" + scriptExecution + ")");
         } catch (Exception e) {
-            LOG.warn("Error occured while executing command " + platformDependentCommand.toString() + ": " + e.getMessage(), e);
+            LOG.warn("Error occured while executing command " + platformDependentSystemCommand.toString() + ": " + e.getMessage(), e);
         }
-
-        return new AsynchrounousProcess(processEnvironment, systemCommand, process);
-    }
-
         
+        return new AsynchronousProcess(platformDependentSystemCommand, processLiveness);
+    }
+
+
     /**
-     * Validate the command list
-     * 
-     * @param systemCommand the system command
-     * @throws IllegalArgumentException In case of a invalid command list
+     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#writeToFile(java.nio.file.Path, java.lang.String)
      */
-    protected void validateSystemCommand(final ISystemCommand systemCommand) {
-        if (systemCommand == null || systemCommand.getCommandList() == null || systemCommand.getCommandList().isEmpty()) {
-            throw new IllegalArgumentException("Invalid command!");
+    @Override
+    public void writeToFile(Path file, String content) throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Write to script file [" + file + "]:\n" + content.replace("\r", ""));
         }
-    }
-
-
-    /**
-     * Validate the process environment
-     *
-     * @param processEnvironment the process environment
-     */
-    protected void validateProcessEnvironment(IProcessEnvironment processEnvironment) {
-    }
-
-    
-    /**
-     * Create a process builder
-     * 
-     * @param platformDependentCommand platform dependent command
-     * @return the process builder
-     */
-    protected ProcessBuilder createProcessBuilder(PlatformDependentCommand platformDependentCommand) {
-        ProcessBuilder builder = new ProcessBuilder();
-        builder.directory(new File(processEnvironment.getWorkingPath()));
-        builder.command(platformDependentCommand.getCommandList());
-        builder.environment().clear();
-        builder.environment().putAll(processEnvironment.getEnvironmentVariables());
-        return builder;
+        
+        Files.writeString(file, content, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
     }
 
     
     /**
      * Prepare platform dependent command list.
      *
-     * @param processEnvironment the process environment
-     * @param systemCommand the system command
+     * @param systemCommandList the system command list
      * @return the platform dependent command list
+     * @throws IllegalArgumentException In case of an invalid system command list
      */
-    protected PlatformDependentCommand preparePlatformDependentCommandList(IProcessEnvironment processEnvironment, ISystemCommand systemCommand) {
-        final List<String> shellCommandList = getShellCommand(processEnvironment, systemCommand);
-        List<String> commandList = new ArrayList<String>();
-        commandList.addAll(shellCommandList);
-        commandList.addAll(systemCommand.getCommandList());
-        
-        StringBuilder shellCommand = new StringBuilder();
-        for (int i = 0; i < shellCommandList.size(); i++) {
-            if (i > 0) {
-                shellCommand.append(SystemCommand.SPACE);
+    protected PlatformDependentSystemCommand preparePlatformDependentCommandList(final List<? extends ISystemCommand> systemCommandList) {
+        if (systemCommandList == null || systemCommandList.isEmpty()) {
+            throw new IllegalArgumentException("Invalid system command list!");
+        }
+
+        StringBuilder displayCommand = new StringBuilder();
+        for (ISystemCommand systemCommand : systemCommandList) {
+            if (displayCommand.length() > 0) {
+                displayCommand.append(getEndOfLine());
             }
-            shellCommand.append(shellCommandList.get(i));
+            
+            //displayCommand.append(ScriptUtil.getInstance().prepareCommandList(getShellCommand(systemCommand)));
+            //displayCommand.append(SystemCommand.SPACE);
+            displayCommand.append(systemCommand.toString(true));
         }
-        
-        return new PlatformDependentCommand(commandList, shellCommand.toString() + SystemCommand.SPACE + systemCommand.toString(true));
+
+        return new PlatformDependentSystemCommand(systemCommandList, displayCommand.toString());
     }
-    
-    
-    /**
-     * Get the shell command
-     * 
-     * @param processEnvironment the process environment
-     * @param systemCommand the system command
-     * @return the shell command
-     */
-    protected abstract List<String> getShellCommand(IProcessEnvironment processEnvironment, ISystemCommand systemCommand);
-    
-    
+
     
     /**
-     * Platform dependent command
+     * Set the process input stream source
      * 
-     * @author patrick
+     * @param processInputStreamSource the process input stream source
+     * @param processOut the process output stream
+     * @param processErr the process error stream
+     * @param processBuilder the process builder
      */
-    public class PlatformDependentCommand {
-        private String commandId;
-        private List<String> commandList;
-        private String displayCommand;
-        
-        
-        /**
-         * Constructor for PlatformDependentCommand
-         *
-         * @param commandList the command list
-         * @param displayCommand the display command
-         */
-        PlatformDependentCommand(List<String> commandList, String displayCommand) {
-            this.commandId = Integer.toHexString(ThreadLocalRandom.current().nextInt()).toUpperCase();
-            this.commandList = commandList;
-            this.displayCommand = displayCommand;
+    protected void setPrcoessInputStreamSource(ProcessBuilder processBuilder, ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr) {
+        ProcessInputStreamSource inputStreamSource = processInputStreamSource;
+        if (inputStreamSource != null) {
+            switch (inputStreamSource) {
+                case DISCARD:
+                    LOG.debug("Discard input stream.");
+                    processBuilder.redirectInput(Redirect.DISCARD);
+                    break;
+                case PIPE:
+                    LOG.debug("Pipe input stream.");
+                    processBuilder.redirectInput(Redirect.PIPE);
+                    break;
+                case INHERIT:
+                default:
+                    LOG.debug("Inherit input stream.");
+                    processBuilder.redirectInput(Redirect.INHERIT);
+                    break;
+            }
         }
         
-        
-        /**
-         * Get the command list
-         *
-         * @return the command list
-         */
-        public List<String> getCommandList() {
-            return commandList;
+        if (processOut == null) {
+            LOG.debug("Discard output stream.");
+            processBuilder.redirectOutput(Redirect.DISCARD);
         }
         
-        
-        /**
-         * The command id
-         * 
-         * @return the command id
-         */
-        public String getCommandId() {
-            return commandId;
+        if (processErr == null) {
+            LOG.debug("Discard error output stream.");
+            processBuilder.redirectError(Redirect.DISCARD);
+        }
+    }
+
+
+    /**
+     * Prepare the command id
+     * 
+     * @return the command id
+     */
+    protected String prepareCommandId() {
+        final String id = platformDependentSystemCommand.getCommandId();
+        if (id != null && !id.isBlank()) {
+            return id;
         }
         
-        
-        /**
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return displayCommand;
-        }
+        return "n/a";
+    }
+
+
+    /**
+     * Prepare duration
+     * 
+     * @param process the process 
+     * @return the duration
+     */
+    protected String prepareDuration(IAsynchronousProcess process) {
+        return ProcessBuilderUtil.getInstance().prepareDuration(process);
     }
 }
+

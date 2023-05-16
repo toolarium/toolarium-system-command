@@ -5,6 +5,12 @@
  */
 package com.github.toolarium.system.command;
 
+import com.github.toolarium.system.command.process.IAsynchronousProcess;
+import com.github.toolarium.system.command.process.ISynchronousProcess;
+import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+
+
 /**
  * Defines the system command executer
  *
@@ -17,7 +23,7 @@ public interface ISystemCommandExecuter {
      *
      * @return the terminated process
      */
-    IProcess runSynchronous();
+    ISynchronousProcess runSynchronous();
 
     
     /**
@@ -27,13 +33,57 @@ public interface ISystemCommandExecuter {
      * @param numberOfSecondsToWait the number of seconds to wait. If the value less or equal 0, it waits until it is executed
      * @return the process
      */
-    IProcess runSynchronous(int numberOfSecondsToWait);
+    ISynchronousProcess runSynchronous(int numberOfSecondsToWait);
 
     
     /**
      * Start a new command asynchronous process. You will get back the started process.
-     *
-     * @return the process
+     * 
+     * @param inputStreamSource the process input stream source stream
+     * @param numberOfSecondsToWait the number of seconds to wait. If the value less or equal 0, it waits until it is executed
+     * @return the asynchronous process which is already started
+     */
+    ISynchronousProcess runSynchronous(ProcessInputStreamSource inputStreamSource, int numberOfSecondsToWait);
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
+     * @param inputStreamSource the process input stream source stream
+     * @param numberOfSecondsToWait the number of seconds to wait. If the value less or equal 0, it waits until it is executed
+     * @param pollTimeout the poll timeout to handle the output streams
+     * @return the asynchronous process which is already started
+     */
+    ISynchronousProcess runSynchronous(ProcessInputStreamSource inputStreamSource, int numberOfSecondsToWait, long pollTimeout);
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
+     * @return the asynchronous process which is already started
      */
     IAsynchronousProcess runAsynchronous();
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
+     * @param inputStreamSource the process input stream source stream
+     * @param processOut the process output stream
+     * @param processErr the process error stream
+     * @return the asynchronous process which is already started
+     */
+    IAsynchronousProcess runAsynchronous(ProcessInputStreamSource inputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr);
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
+     * @param inputStreamSource the process input stream source stream
+     * @param processOut the process output stream
+     * @param processErr the process error stream
+     * @param pollTimeout the poll timeout to handle the output streams
+     * @return the asynchronous process which is already started
+     */
+    IAsynchronousProcess runAsynchronous(ProcessInputStreamSource inputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr, long pollTimeout);
 }
