@@ -33,7 +33,7 @@ logs/
 *error*.log*
 
 # Ignore temp output directory
-temp/
+#temp/
 
 # Ignore runtime data
 pids
