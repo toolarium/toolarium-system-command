@@ -5,7 +5,7 @@
  */
 package com.github.toolarium.system.command.process.dto;
 
-import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
 import java.time.Duration;
 import java.time.Instant;
@@ -24,7 +24,7 @@ public class SynchronousProcess extends AbstractProcess implements ISynchronousP
     /**
      * Constructor for Process
      *
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommandGroupList the system command group list
      * @param pid the pid
      * @param startTime the start time
      * @param totalCpuDuration the total cpu duration
@@ -32,14 +32,14 @@ public class SynchronousProcess extends AbstractProcess implements ISynchronousP
      * @param out the output
      * @param errorOut the error output
      */
-    public SynchronousProcess(final PlatformDependentSystemCommand platformDependentSystemCommand, 
+    public SynchronousProcess(final ISystemCommandGroupList systemCommandGroupList, 
                               final Long pid, 
                               final Instant startTime, 
                               final Duration totalCpuDuration, 
                               final Integer exitValue,
                               final String out,
                               final String errorOut) {
-        super(platformDependentSystemCommand, pid, startTime, totalCpuDuration, exitValue);
+        super(systemCommandGroupList, pid, startTime, totalCpuDuration, exitValue);
         this.out = out;
         this.errorOut = errorOut;
     }

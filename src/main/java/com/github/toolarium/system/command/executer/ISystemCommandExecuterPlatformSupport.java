@@ -3,8 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.executer;
 
+import com.github.toolarium.system.command.ISystemCommand;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,7 +25,15 @@ public interface ISystemCommandExecuterPlatformSupport {
      * @param systemCommand the system command
      * @return the shell command
      */
-    List<String> getShellCommand(ISystemCommand systemCommand);
+    List<String> getShellStartCommand(ISystemCommand systemCommand);
+
+    /**
+     * Get the end shell command
+     * 
+     * @param systemCommand the system command
+     * @return the shell command
+     */
+    List<String> getShellEndCommand(ISystemCommand systemCommand);
 
     
     /**
@@ -105,6 +114,38 @@ public interface ISystemCommandExecuterPlatformSupport {
      * @return the end of line
      */
     String getEndOfLine();
+    
+    
+    /**
+     * Get the start command on success
+     *
+     * @return the start command on success
+     */
+    String getCommandOnSuccessStart();
+
+    
+    /**
+     * Get the end command on success
+     *
+     * @return the end command on success
+     */
+    String getCommandOnSuccessEnd();
+
+    
+    /**
+     * Get the start command on error
+     *
+     * @return the start command on error
+     */
+    String getCommandOnErrorStart();
+
+    
+    /**
+     * Get the end command on error
+     *
+     * @return the end command on error
+     */
+    String getCommandOnErrorEnd();
     
     
     /**

@@ -5,10 +5,9 @@
  */
 package com.github.toolarium.system.command.process;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 
 /**
@@ -19,15 +18,15 @@ import java.util.List;
 public interface IProcess {
     
     /**
-     * Get the system command list.
+     * Get the system command group list.
      *
-     * @return the system command list of this process
+     * @return the system command group list of this process
      */
-    List<? extends ISystemCommand> getSystemCommandList();
+    ISystemCommandGroupList getSystemCommandGroupList();
 
         
     /**
-     * Get the process id.
+     * Get the process id
      *
      * @return the native process id of the process or null if unknown
      */

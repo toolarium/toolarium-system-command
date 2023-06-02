@@ -5,6 +5,9 @@
  */
 package com.github.toolarium.system.command;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Test class
@@ -12,7 +15,40 @@ package com.github.toolarium.system.command;
  * @author patrick
  */
 public final class TestMain {
+    /** Main header */
+    public static final String MAIN_HEADRER = "Main ";
+
+    /** Parameters title */
+    public static final String PARAMETERS_TITLE = "  - Parameters";
+
+    /** Parameters prefix */
+    public static final String PARAMETERS_PREFIX = "    - parameter[";
     
+    /** Parameters appendix */
+    public static final String PARAMETERS_APPENDIX = "]: ";
+
+    /** STR OUT TEST message */
+    public static final String STD_TEST = "Std test: ";
+    
+    /** STR ERROR TEST message */
+    public static final String STD_ERR_TEST = "Std Err test";
+
+    /** Environment KEY */
+    public static final String ENV_KEY = "BASE";
+
+    /** System property key*/
+    public static final String SYSTEM_PROPERTY_KEY = "key";
+
+    /** System property key*/
+    public static final String SYSTEM_PROPERTY_PRINT_VERBOSE = "verbose";
+
+    /** System property key*/
+    public static final String SYSTEM_PROPERTY_EXIT_VALUE = "exit";
+
+    /** System property read input */
+    public static final String SYSTEM_PROPERTY_READINPUT = "readInput";
+
+
     /**
      * Constructor for TestMain
      */
@@ -26,19 +62,52 @@ public final class TestMain {
      * @param args program parameters
      */
     public static void main(String[] args) {
-        print("Main " + TestMain.class.getName(), false);
+        if (isEnabled(SYSTEM_PROPERTY_PRINT_VERBOSE)) {
+            printVerbose(args);
+        }
         
-        if (args != null || args.length > 0) {
-            print("  - Parameters", false);
+        // echo input
+        String readInput = System.getProperty(SYSTEM_PROPERTY_READINPUT);
+        if (readInput != null && !readInput.isBlank()) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                String line = reader.readLine();
+                if (line != null) {
+                    print(line, false);
+                }
+            } catch (IOException e) {
+                // NOP
+            }
+        }
+            
+
+        // exit value
+        String exitValue = System.getProperty(SYSTEM_PROPERTY_EXIT_VALUE);
+        if (exitValue != null && !exitValue.isBlank()) {
+            System.exit(Integer.valueOf(exitValue)); // CHECKSTYLE IGNORE THIS LINE
+        }
+    }
+
+    
+    /**
+     * Print verbose
+     *
+     * @param args the arguments
+     */
+    private static void printVerbose(String[] args) {
+        print(MAIN_HEADRER + TestMain.class.getName(), false);
+        
+        if (args != null && args.length > 0) {
+            print(PARAMETERS_TITLE, false);
             for (int i = 0; i < args.length; i++) {
-                print("    - parameter[" + i + "]: " + args[i], false);
+                print(PARAMETERS_PREFIX + i + PARAMETERS_APPENDIX + args[i], false);
             }
         }
         
-        print("Std test", false);
-        print("Std Err test", true);
+        print(STD_TEST + System.getenv().get(ENV_KEY) + "/" + System.getProperty(SYSTEM_PROPERTY_KEY), false);
+        print(STD_ERR_TEST, true);
     }
-    
+
     
     /**
      * Print a value to the console
@@ -52,5 +121,17 @@ public final class TestMain {
         } else {
             System.out.println(value); // CHECKSTYLE IGNORE THIS LINE
         }
+    }
+    
+    
+    /**
+     * Check if it is enables
+     *
+     * @param key the key
+     * @return true if it is enabled
+     */
+    private static boolean isEnabled(String key) {
+        String value = System.getProperty(key);
+        return (value != null && Boolean.valueOf(value).booleanValue());
     }
 }

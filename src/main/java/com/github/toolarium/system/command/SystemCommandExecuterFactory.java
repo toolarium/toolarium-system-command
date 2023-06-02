@@ -5,13 +5,16 @@
  */
 package com.github.toolarium.system.command;
 
-import com.github.toolarium.system.command.impl.LinuxSystemCommandExecuterImpl;
-import com.github.toolarium.system.command.impl.UnixSystemCommandExecuterImpl;
-import com.github.toolarium.system.command.impl.WindowsSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.builder.SystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.SystemCommandGroupList;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
+import com.github.toolarium.system.command.executer.LinuxSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.executer.UnixSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.executer.WindowsSystemCommandExecuterImpl;
 import com.github.toolarium.system.command.process.temp.TempFolderCleanupService;
 import com.github.toolarium.system.command.process.thread.NameableThreadFactory;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +65,16 @@ public final class SystemCommandExecuterFactory {
 
     
     /**
+     * Get the instance
+     *
+     * @return the instance
+     */
+    public static SystemCommandExecuterFactory getInstance() {
+        return HOLDER.INSTANCE;
+    }
+
+    
+    /**
      * Start the temp folder cleanup service
      */
     public void startTempFolderCleanupService() {
@@ -102,14 +115,14 @@ public final class SystemCommandExecuterFactory {
         }
     }
 
-
+    
     /**
-     * Get the instance
+     * Create a system command executer type builder
      *
-     * @return the instance
+     * @return the system command executer type builder
      */
-    public static SystemCommandExecuterFactory getInstance() {
-        return HOLDER.INSTANCE;
+    public static ISystemCommandExecuterTypeBuilder builder() {
+        return new SystemCommandExecuterTypeBuilder(new SystemCommandGroupList());
     }
 
 
@@ -120,29 +133,31 @@ public final class SystemCommandExecuterFactory {
      * @return the system command executer
      */
     public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommand... systemCommand) {
-        return createSystemCommandExecuter(Arrays.asList(systemCommand));
+        ISystemCommandGroupList s = new SystemCommandGroupList();
+        s.add(systemCommand);
+        return createSystemCommandExecuter(s);
     }
 
     
     /**
      * Create a system command executer
      *
-     * @param systemCommandList the system command list
+     * @param systemCommandGroupList the system commandm group list
      * @return the system command executer
      */
-    public ISystemCommandExecuter createSystemCommandExecuter(List<? extends ISystemCommand> systemCommandList) {
+    public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommandGroupList systemCommandGroupList) {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.startsWith("windows")) {
             
             LOG.debug("Choose " + WindowsSystemCommandExecuterImpl.class.getName() + " as executer.");
-            return new WindowsSystemCommandExecuterImpl(systemCommandList);
+            return new WindowsSystemCommandExecuterImpl(systemCommandGroupList);
         } else if (osName.startsWith("linux")) {
             
             LOG.debug("Choose " + LinuxSystemCommandExecuterImpl.class.getName() + " as executer.");
-            return new LinuxSystemCommandExecuterImpl(systemCommandList);
+            return new LinuxSystemCommandExecuterImpl(systemCommandGroupList);
         }
 
         LOG.debug("Choose " + UnixSystemCommandExecuterImpl.class.getName() + " as executer.");
-        return new UnixSystemCommandExecuterImpl(systemCommandList);
+        return new UnixSystemCommandExecuterImpl(systemCommandGroupList);
     }
 }

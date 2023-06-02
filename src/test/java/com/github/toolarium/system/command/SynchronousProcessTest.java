@@ -32,7 +32,11 @@ public class SynchronousProcessTest extends AbstractProcessTest {
      */
     @Test
     public void listDirectoryTest() {
-        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand("dir").build().runSynchronous(10), 
+        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system()
+                .command("dir")
+                .build()
+                .runSynchronous(10), 
                                                               null,     // ignore standard out
                                                               "",       // no standard error! 
                                                               null,     // default working path  
@@ -51,7 +55,10 @@ public class SynchronousProcessTest extends AbstractProcessTest {
     @Test
     public void echoSynchrnousTest() {
         String command = "echo ok";
-        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runSynchronous(), 
+        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command)
+                .build()
+                .runSynchronous(), 
                                                              "ok",     // expected standard out
                                                              "",       // no standard error! 
                                                              null,     // default working path  
@@ -73,7 +80,11 @@ public class SynchronousProcessTest extends AbstractProcessTest {
         }
         
         String command = "ech ok";        
-        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runSynchronous(), 
+        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system()
+                .command(command)
+                .build()
+                .runSynchronous(), 
                                                              "",       // no standard out! 
                                                              null,     // ignore standard error!
                                                              null,     // default working path  
@@ -92,14 +103,20 @@ public class SynchronousProcessTest extends AbstractProcessTest {
     public void sleepTest() {
         int seconds = 2;
         String command = SystemCommandFactory.getInstance().createSleepCommand(seconds);
-        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runSynchronous(),
+        ISynchronousProcess process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command)
+                .build()
+                .runSynchronous(),
                                                              "",       // no standard out! 
                                                              "",       // no standard error!
                                                              null,     // default working path  
                                                              null,     // no environment 
                                                              0,        // return value
                                                              command); // command
-        process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runSynchronous(),
+        process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command)
+                .build()
+                .runSynchronous(),
                                          "",       // no standard out! 
                                          "",       // no standard error!
                                          null,     // default working path  
@@ -111,7 +128,10 @@ public class SynchronousProcessTest extends AbstractProcessTest {
         LOG.debug("Exit value: " + process.getExitValue());
 
         command = SystemCommandFactory.getInstance().createSleepCommand(2 * seconds);
-        process = assertSynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runSynchronous(),
+        process = assertSynchroneProcess(SystemCommandExecuterFactory.builder()
+                    .system().command(command)
+                    .build()
+                    .runSynchronous(),
                                          "",       // no standard out! 
                                          "",       // no standard error!
                                          null,     // default working path  

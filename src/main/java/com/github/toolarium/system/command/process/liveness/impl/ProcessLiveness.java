@@ -11,6 +11,7 @@ import com.github.toolarium.system.command.process.stream.impl.ProcessInputStrea
 import com.github.toolarium.system.command.process.stream.impl.ProcessStreamConsumer;
 import java.io.BufferedInputStream;
 import java.time.Instant;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProcessLiveness implements IProcessLiveness, Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessLiveness.class);
-    private final Process process;
+    private final List<Process> processList;
     private ProcessStreamConsumer outputStream;
     private ProcessStreamConsumer errorStream;
     private volatile boolean isAlive;
@@ -33,25 +34,25 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
     /**
      * Constructor for ProcessLiveness
      *
-     * @param process the process
+     * @param processList the process list
      * @param outputStream the output stream
      * @param errorStream the error output stream
      * @param pollTimeout the poll timeout, e.g. 10
      */
-    public ProcessLiveness(final Process process, final IProcessOutputStream outputStream, final IProcessOutputStream errorStream, long pollTimeout) {
-        this.process = process;
-        
-        if (outputStream != null) {
+    public ProcessLiveness(final List<Process> processList, final IProcessOutputStream outputStream, final IProcessOutputStream errorStream, long pollTimeout) {
+        this.processList = processList;
+        Process process = getProcess();
+
+        if (outputStream != null && process != null) {
             this.outputStream = new ProcessStreamConsumer(new ProcessInputStream(new BufferedInputStream(process.getInputStream())), outputStream);
         }
             
-        if (errorStream != null) {
+        if (errorStream != null && process != null) {
             this.errorStream = new ProcessStreamConsumer(new ProcessInputStream(new BufferedInputStream(process.getErrorStream())), errorStream);
         }
         
         this.pollTimeout = pollTimeout;
         this.isAlive = true;
-        
         if (process == null || process.info() == null || process.info().startInstant().isEmpty()) {
             startupTime = Instant.now();            
         } else {
@@ -74,6 +75,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
      */
     @Override
     public void run() {
+        Process process = getProcess();
         LOG.info("Start process liveness thread for process " + process.pid() + "...");
         isAlive = (process != null && process.isAlive()) || ((outputStream != null) || (errorStream != null));
 
@@ -139,7 +141,33 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
      */
     @Override
     public Process getProcess() {
-        return process;
+        if (processList.size() <= 0) {
+            return null;
+        }
+        
+        if (processList.size() > 1) {
+            for (Process process : processList) {
+                if (process.isAlive()) {
+                    return process;
+                }
+            }
+        }
+        
+        return processList.get(processList.size() - 1);
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#getProcessId()
+     */
+    @Override
+    public String getProcessId() {
+        String pid = "n/a";
+        if (getProcess() != null) {
+            pid = Long.toString(getProcess().pid());
+        }
+        
+        return pid;
     }
 
 
@@ -148,6 +176,6 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
      */
     @Override
     public String toString() {
-        return "ProcessLiveness [startupTime=" + startupTime + ", pid=" + process.pid() + ", isAlive=" + isAlive() + ", outputStream=" + outputStream + ", errorStream=" + errorStream + ", pollTimeout=" + getPollTimeout() + "]";
+        return "ProcessLiveness [startupTime=" + startupTime + ", pid=" + getProcessId() + ", isAlive=" + isAlive() + ", outputStream=" + outputStream + ", errorStream=" + errorStream + ", pollTimeout=" + getPollTimeout() + "]";
     }
 }

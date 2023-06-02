@@ -5,14 +5,20 @@
  */
 package com.github.toolarium.system.command.process.dto;
 
-import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
+import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -21,31 +27,32 @@ import java.util.concurrent.TimeUnit;
  * @author patrick
  */
 public class AsynchronousProcess extends AbstractProcess implements IAsynchronousProcess, AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(AsynchronousProcess.class);
     private IProcessLiveness processLiveness;
 
     
     /**
      * Constructor for AsynchrounousProcess
      *
-     * @param platformDependentSystemCommand the system command list
+     * @param systemCommandGroupList the system command group list
      * @param pid the pid
      * @param startTime the start time
      * @param totalCpuDuration the total cpu duration
      * @param exitValue the exist value
      */
-    private AsynchronousProcess(PlatformDependentSystemCommand platformDependentSystemCommand, Long pid, Instant startTime, Duration totalCpuDuration, Integer exitValue) {
-        super(platformDependentSystemCommand, pid, startTime, totalCpuDuration, exitValue);
+    private AsynchronousProcess(ISystemCommandGroupList systemCommandGroupList, Long pid, Instant startTime, Duration totalCpuDuration, Integer exitValue) {
+        super(systemCommandGroupList, pid, startTime, totalCpuDuration, exitValue);
     }
 
     
     /**
      * Constructor for AsynchrounousProcess
      *
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommandGroupList the system command group list
      * @param processLiveness the process liveness
      */
-    public AsynchronousProcess(PlatformDependentSystemCommand platformDependentSystemCommand, IProcessLiveness processLiveness) {
-        this(platformDependentSystemCommand, null, null, null, null);
+    public AsynchronousProcess(ISystemCommandGroupList systemCommandGroupList, IProcessLiveness processLiveness) {
+        this(systemCommandGroupList, null, null, null, null);
         this.processLiveness = processLiveness;
     }
     
@@ -68,7 +75,11 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      */
     @Override
     public Instant getStartTime() {
-        return processLiveness.getStartupTime();
+        if (getProcessLiveness() == null) {
+            return null;
+        }
+        
+        return getProcessLiveness().getStartupTime();
     }
 
     
@@ -90,7 +101,7 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      */
     @Override
     public Integer getExitValue() {
-        if (getProcess() == null) {
+        if (getProcess() == null || getProcessLiveness() == null) {
             return null;
         }
         
@@ -108,13 +119,13 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      */
     @Override
     public int waitFor() throws InterruptedException {
-        if (getProcess() == null) {
+        if (getProcess() == null || getProcessLiveness() == null) {
             return -1;
         }
         
         int result = getProcess().waitFor();
-        while (processLiveness.isAlive()) {
-            Thread.sleep(processLiveness.getPollTimeout());
+        while (isAlive()) {
+            Thread.sleep(getProcessLiveness().getPollTimeout());
         }
         
         return result;
@@ -126,13 +137,13 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      */
     @Override
     public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
-        if (getProcess() == null) {
+        if (getProcess() == null || getProcessLiveness() == null) {
             return true;
         }
         
         boolean result = getProcess().waitFor(timeout, unit);
-        while (processLiveness.isAlive()) {
-            Thread.sleep(processLiveness.getPollTimeout());
+        while (isAlive()) {
+            Thread.sleep(getProcessLiveness().getPollTimeout());
         }
 
         return result;
@@ -144,11 +155,11 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      */
     @Override
     public boolean isAlive() {
-        if (getProcess() == null) {
+        if (getProcess() == null || getProcessLiveness() == null) {
             return false;
         }
         
-        return processLiveness.isAlive();
+        return getProcessLiveness().isAlive();
     }
 
     
@@ -214,7 +225,16 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
             }
         }
         
-        ProcessStreamUtil.getInstance().deleteDirectory(getTempPath());
+        Iterator<ISystemCommandGroup> it = getSystemCommandGroupList().iterator();
+        while (it.hasNext()) {
+            Path tempPath = ScriptUtil.getInstance().prepareTempPath(it.next());
+            
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Delete directory [" + tempPath + "]...");
+            }
+            
+            ProcessStreamUtil.getInstance().deleteDirectory(tempPath);
+        }
     }
 
     
@@ -243,6 +263,10 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
      * @return the process
      */
     protected java.lang.Process getProcess() {
-        return processLiveness.getProcess();
+        if (getProcessLiveness() == null) {
+            return null;
+        }
+        
+        return getProcessLiveness().getProcess();
     }
 }

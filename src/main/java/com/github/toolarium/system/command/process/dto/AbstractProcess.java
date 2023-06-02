@@ -5,13 +5,10 @@
  */
 package com.github.toolarium.system.command.process.dto;
 
-import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IProcess;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 
@@ -21,7 +18,7 @@ import java.util.Objects;
  * @author patrick
  */
 public abstract class AbstractProcess implements IProcess {
-    private PlatformDependentSystemCommand platformDependentSystemCommand;
+    private ISystemCommandGroupList systemCommandGroupList;
     private Long pid;
     private Instant startTime;
     private Duration totalCpuDuration;
@@ -31,19 +28,19 @@ public abstract class AbstractProcess implements IProcess {
     /**
      * Constructor for Process
      *
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommandGroupList the system command group list
      * @param pid the pid
      * @param startTime the start time
      * @param totalCpuDuration the total cpu duration
      * @param exitValue the exist value
      */
-    public AbstractProcess(PlatformDependentSystemCommand platformDependentSystemCommand, Long pid, Instant startTime, Duration totalCpuDuration, Integer exitValue) {
-        this.platformDependentSystemCommand = platformDependentSystemCommand;
+    public AbstractProcess(ISystemCommandGroupList systemCommandGroupList, Long pid, Instant startTime, Duration totalCpuDuration, Integer exitValue) {
+        this.systemCommandGroupList = systemCommandGroupList;
         this.pid = pid;
         this.startTime = startTime;
         this.totalCpuDuration = totalCpuDuration;
         this.exitValue = exitValue;
-        
+
         if (this.startTime == null) {
             this.startTime = Instant.now();            
         }
@@ -51,11 +48,11 @@ public abstract class AbstractProcess implements IProcess {
 
     
     /**
-     * @see com.github.toolarium.system.command.process.IProcess#getSystemCommandList()
+     * @see com.github.toolarium.system.command.process.IProcess#getSystemCommandGroupList()
      */
     @Override
-    public List<? extends ISystemCommand> getSystemCommandList() {
-        return platformDependentSystemCommand.getSystemCommandList();
+    public ISystemCommandGroupList getSystemCommandGroupList() {
+        return systemCommandGroupList;
     }
 
     
@@ -100,7 +97,7 @@ public abstract class AbstractProcess implements IProcess {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(platformDependentSystemCommand, pid, exitValue, startTime);
+        return Objects.hash(systemCommandGroupList, pid, exitValue, startTime);
     }
 
 
@@ -122,7 +119,7 @@ public abstract class AbstractProcess implements IProcess {
         }
         
         AbstractProcess other = (AbstractProcess) obj;
-        return Objects.equals(platformDependentSystemCommand, other.platformDependentSystemCommand) && pid == other.pid
+        return Objects.equals(systemCommandGroupList, other.systemCommandGroupList) && Objects.equals(pid, other.pid)
                 && exitValue == other.exitValue && Objects.equals(startTime, other.startTime);
     }
 
@@ -132,17 +129,7 @@ public abstract class AbstractProcess implements IProcess {
      */
     @Override
     public String toString() {
-        return "Process [platformDependentSystemCommand=" + platformDependentSystemCommand + ", pid=" + getPid() 
+        return "Process [systemCommandGroupList=" + systemCommandGroupList + ", pid=" + getPid() 
                + ", startTime=" + getStartTime() + ", totalCpuDuration=" + getTotalCpuDuration() + ", exitValue=" + getExitValue() + "]";
-    }
-
-
-    /**
-     * Get the temp path
-     *
-     * @return the temp path or null
-     */
-    protected Path getTempPath() {
-        return platformDependentSystemCommand.getTempPath();
     }
 }

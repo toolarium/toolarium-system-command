@@ -8,6 +8,7 @@ package com.github.toolarium.system.command.dto;
 
 import com.github.toolarium.system.command.ISystemCommand;
 import com.github.toolarium.system.command.process.env.IProcessEnvironment;
+import com.github.toolarium.system.command.process.env.dto.ProcessEnvironment;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +29,18 @@ public class SystemCommand implements ISystemCommand {
     private List<String> commandList;
     private StringBuilder command;
     private StringBuilder displayCommand;
+    private SystemCommandExecutionStatusResult systemCommandExecutionStatusResult;
     private IProcessOutputStream processOutputStream;
     private IProcessOutputStream errorProcessOutputStream;
+
+    
+    /**
+     * Constructor for SystemCommand
+     */
+    public SystemCommand() {
+        this(new ProcessEnvironment());
+    }
+
     
     /**
      * Constructor for SystemCommand
@@ -119,13 +130,33 @@ public class SystemCommand implements ISystemCommand {
         this.commandList = commandList;
     }
     
+
+    /**
+     * @see com.github.toolarium.system.command.ISystemCommand#getSystemCommandExecutionStatusResult()
+     */
+    @Override
+    public SystemCommandExecutionStatusResult getSystemCommandExecutionStatusResult() {
+        return systemCommandExecutionStatusResult;
+    }
+
+    
+
+    /**
+     * Set the system command execution status result
+     *
+     * @param systemCommandExecutionStatusResult the system command execution status result
+     */
+    public void setSystemCommandExecutionStatusResult(SystemCommandExecutionStatusResult systemCommandExecutionStatusResult) {
+        this.systemCommandExecutionStatusResult = systemCommandExecutionStatusResult;
+    }
+    
     
     /**
      * @see java.lang.Object#hashCode()
      */
     @Override
     public int hashCode() {
-        return Objects.hash(processEnvironment, processOutputStream, errorProcessOutputStream, shell, command, commandList, displayCommand);
+        return Objects.hash(processEnvironment, processOutputStream, errorProcessOutputStream, shell, command, commandList, displayCommand, systemCommandExecutionStatusResult);
     }
 
 
@@ -152,7 +183,8 @@ public class SystemCommand implements ISystemCommand {
                 && Objects.equals(errorProcessOutputStream, other.errorProcessOutputStream)
                 && Objects.equals(shell, other.shell)
                 && Objects.equals(command, other.command) && Objects.equals(commandList, other.commandList)
-                && Objects.equals(displayCommand, other.displayCommand);
+                && Objects.equals(displayCommand, other.displayCommand)
+                && Objects.equals(systemCommandExecutionStatusResult, other.systemCommandExecutionStatusResult);
     }
 
     

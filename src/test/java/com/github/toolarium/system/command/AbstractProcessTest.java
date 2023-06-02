@@ -6,15 +6,22 @@
 package com.github.toolarium.system.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.toolarium.system.command.ISystemCommand.SystemCommandExecutionStatusResult;
+import com.github.toolarium.system.command.dto.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IProcess;
 import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +46,8 @@ public class AbstractProcessTest {
      */
     @BeforeEach() 
     public void startLog(TestInfo testInfo) {
-        final String header = "- START: " + testInfo.getDisplayName() + " "; 
-        LOG.info(header + ScriptUtil.getInstance().prepareString("-", (80 - header.length())));
+        final String header = "--- [START] " + testInfo.getDisplayName() + " "; 
+        LOG.info(header + ScriptUtil.getInstance().prepareString("-", (120 - header.length())));
     }
 
     
@@ -51,8 +58,8 @@ public class AbstractProcessTest {
      */
     @AfterEach() 
     public void endLog(TestInfo testInfo) {
-        final String header = "- END: " + testInfo.getDisplayName() + " "; 
-        LOG.info(header + ScriptUtil.getInstance().prepareString("-", (80 - header.length())) + "\n");
+        final String header = "--- [END]   " + testInfo.getDisplayName() + " "; 
+        LOG.info(header + ScriptUtil.getInstance().prepareString("-", (120 - header.length())) + "\n");
     }
 
     
@@ -60,11 +67,16 @@ public class AbstractProcessTest {
      * Get environment key
      *
      * @param key the key
+     * @param hasConfition true it it has condition
      * @return the prepared expression
      */
-    protected String prepareGetEnvValue(String key) {
+    protected String prepareGetEnvValue(String key, boolean hasConfition) {
         if (isWindows()) {
-            return "%" + key + "%";
+            if (hasConfition) {
+                return "!" + key + "!";
+            } else {
+                return "%" + key + "%";
+            }
         }
         
         return "$" + key;
@@ -108,7 +120,35 @@ public class AbstractProcessTest {
      */
     protected IProcess assertProcess(IProcess process, String workingPath, Map<String, String> env, int returnValue, String... commands) {
         
-        ISystemCommand systemCommand = process.getSystemCommandList().get(0);
+        ISystemCommandGroupList systemCommandGroupList = process.getSystemCommandGroupList();
+        assertNotNull(systemCommandGroupList);
+        assertEquals(1, systemCommandGroupList.size());
+        ISystemCommandGroup systemCommandGroup = systemCommandGroupList.iterator().next();
+        assertNotNull(systemCommandGroup);
+      
+        int commandCounter = 0;
+        List<String> commandList = new LinkedList<>(Arrays.asList(commands));
+        Iterator<ISystemCommandGroup> l = systemCommandGroupList.iterator();
+        while (l.hasNext()) {
+            ISystemCommandGroup g = l.next();
+            Iterator<ISystemCommand> s = g.iterator();
+            while (s.hasNext()) {
+                ISystemCommand c = s.next();
+                if (c.getSystemCommandExecutionStatusResult() != null && !SystemCommandExecutionStatusResult.SUCCESS_OR_ERROR.equals(c.getSystemCommandExecutionStatusResult())) {
+                    if (SystemCommandExecutionStatusResult.SUCCESS.equals(c.getSystemCommandExecutionStatusResult())) {
+                        String ss = commandList.remove(commandCounter);
+                        LOG.debug("Remove " + ss);
+                    } else {
+                        commandCounter++;
+                    }
+                } else {
+                    commandCounter++;
+                }
+            }
+        }
+        
+        //assertEquals(commands.length, systemCommandGroup.size(), "" + systemCommandGroup);
+        ISystemCommand systemCommand = systemCommandGroup.iterator().next();
         assertEquals(systemCommand.getProcessEnvironment().getUser(), System.getProperty("user.name").trim());
         
         if (workingPath == null) {
@@ -135,20 +175,9 @@ public class AbstractProcessTest {
         assertEquals(systemCommand.getProcessEnvironment().getArchitecture(), System.getProperty("os.arch").trim());
         assertNull(systemCommand.getShell());
         
-        String execCommands = "";
-        String displayCommands = "";
-        for (ISystemCommand sc : process.getSystemCommandList()) {
-            if (!execCommands.isEmpty()) {
-                execCommands += ", ";
-            }
-            execCommands += sc.toString();
+        String execCommands = systemCommandGroupList.toString(true).replaceAll("\n", ", ");
+        String displayCommands = systemCommandGroupList.toString().replaceAll("\n", ", ");
             
-            if (!displayCommands.isEmpty()) {
-                displayCommands += ", ";
-            }
-            displayCommands += sc.toString(true);
-        }
-        
         if (commands != null) {
             assertEquals("[" + execCommands + "]",  "" + Arrays.asList(commands));
             assertEquals("[" + displayCommands + "]",  "" + Arrays.asList(commands));

@@ -6,14 +6,17 @@
 package com.github.toolarium.system.command.process.util;
 
 import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport;
-import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import com.github.toolarium.system.command.process.IProcess;
 import com.github.toolarium.system.command.process.util.dto.SystemCommandExecuterPlatformSupportWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,87 +85,194 @@ public final class ProcessBuilderUtil {
 
     
     /**
-     * Create a process builder
+     * Create a process builder list
      * 
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommandGroupList the system command group list
      * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
      * @return the process builder
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    public ProcessBuilder createProcessBuilder(PlatformDependentSystemCommand platformDependentSystemCommand, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
-        validateParameters(platformDependentSystemCommand, inputSystemCommandExecuterPlatformSupport);
-        ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport = new SystemCommandExecuterPlatformSupportWrapper(inputSystemCommandExecuterPlatformSupport); 
-
-        List<String> cmdList = new ArrayList<>();
-        cmdList.addAll(systemCommandExecuterPlatformSupport.getShellCommand(platformDependentSystemCommand.getSystemCommandList().get(0))); // in all cases we use the first command
-
-        final Map<String, String> environmentVariables = platformDependentSystemCommand.getSystemCommandList().get(0).getProcessEnvironment().getEnvironmentVariables();
-        String workingPath = platformDependentSystemCommand.getSystemCommandList().get(0).getProcessEnvironment().getWorkingPath();
-        LOG.debug("Use script working path to [" + workingPath + "].");
-        
-        if (platformDependentSystemCommand.getSystemCommandList().size() <= 1) {
-            cmdList.addAll(platformDependentSystemCommand.getSystemCommandList().get(0).getCommandList());
-            //cmdList.addAll(systemCommandExecuterPlatformSupport.getEndShellCommand(platformDependentSystemCommand.getSystemCommandList().get(0))); // in all cases we use the first command
-        } else {
-            try {
-                Path file = ScriptUtil.getInstance().prepareTempPathAndScript(platformDependentSystemCommand, systemCommandExecuterPlatformSupport);
-                LOG.debug("Set script [" + file.toString() + "]");
-                cmdList.add(file.toString());
-                
-                // create a temp script to run multiple commands
-                Map<String, String> currentEnvironmentMap = environmentVariables;
-                currentEnvironmentMap.put("TOOLARIUM_TEMP", file.getParent().toString());
-                String currentWorkingPath = workingPath;
-                for (ISystemCommand systemCommand : platformDependentSystemCommand.getSystemCommandList()) {
-                    LOG.debug("Prepare command [" + systemCommand.toString(true) + "]");
-                    systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEndOfLine());
-                    
-                    // set environment variables
-                    currentEnvironmentMap = prepareEnvironmentVariables(systemCommandExecuterPlatformSupport, file, currentEnvironmentMap, systemCommand.getProcessEnvironment().getEnvironmentVariables());
-                    currentEnvironmentMap.put(ProcessBuilderUtil.TEMP, file.getParent().toString());
-                    
-                    // the working directory
-                    String newWorkingPath = systemCommand.getProcessEnvironment().getWorkingPath();
-                    // TODO: relative path new File(base).toURI().relativize(new File(path).toURI()).getPath();
-                    
-                    if (newWorkingPath != null && !currentWorkingPath.equals(newWorkingPath)) {
-                        LOG.debug("Set in script working path to [" + newWorkingPath + "].");
-                        systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEnvironmentChangeDirectoryCommand() + newWorkingPath + systemCommandExecuterPlatformSupport.getEndOfLine());
-                        currentWorkingPath = newWorkingPath;
-                    } else {
-                        LOG.debug("Keep script working path to [" + newWorkingPath + "].");
-                    }
-
-                    // the command
-                    systemCommandExecuterPlatformSupport.writeToFile(file, 
-                                                                     /*ScriptUtil.getInstance().prepareCommandList(systemCommandExecuterPlatformSupport.getShellCommand(systemCommand))
-                                                                     + SystemCommand.SPACE*/ ""                            
-                                                                     + ScriptUtil.getInstance().prepareCommandList(systemCommand.getCommandList())
-                                                                     + systemCommandExecuterPlatformSupport.getEndOfLine());
-                }
-                
-                // close script file
-                ScriptUtil.getInstance().closeScriptFile(systemCommandExecuterPlatformSupport, file);
-            } catch (IOException e1) {
-                LOG.warn("Error occured: " + e1.getMessage(), e1);
-            }
+    public List<ProcessBuilder> createProcessBuilders(ISystemCommandGroupList systemCommandGroupList, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+        if (systemCommandGroupList == null || systemCommandGroupList.size() == 0) {
+            return null;
         }
+        
+        List<ProcessBuilder> list = new ArrayList<>();
+        Iterator<ISystemCommandGroup> it = systemCommandGroupList.iterator();
+        while (it.hasNext()) {
+            ProcessBuilder processBuilder = createProcessBuilder(it.next(), inputSystemCommandExecuterPlatformSupport);
+            //ProcessBuilder.Redirect
+            list.add(processBuilder);
+        }
+        
+        return list;
+    }
 
+    
+    /**
+     * Create command line
+     * 
+     * @param systemCommand the system command
+     * @param systemCommandExecuterPlatformSupport the system command executer platform support
+     * @param commandList the command list
+     * @return the process builder
+     * @throws IllegalArgumentException In case of invalid parameters
+     */
+    List<String> createCommandLine(ISystemCommand systemCommand, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport, List<String> commandList) {
+        List<String> cmdList = new ArrayList<>();
+        List<String> shellStart = systemCommandExecuterPlatformSupport.getShellStartCommand(systemCommand);
+        if (shellStart != null && !shellStart.isEmpty()) {
+            cmdList.addAll(shellStart);
+        }
+        
+        cmdList.addAll(commandList);
+        
+        List<String> shellEnd = systemCommandExecuterPlatformSupport.getShellEndCommand(systemCommand);
+        if (shellEnd != null && !shellEnd.isEmpty()) {
+            cmdList.addAll(shellEnd);
+        }
+        
+        return cmdList;
+    }
+    
+    
+    /**
+     * Create a process builder
+     * 
+     * @param systemCommandGroup the system command group
+     * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @return the process builder
+     * @throws IllegalArgumentException In case of invalid parameters
+     */
+    public ProcessBuilder createProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+        validateParameters(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
+
+        if (systemCommandGroup.runAsScript()) {
+            return createScriptProcessBuilder(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
+        } else {
+            return createProcessBuilder(systemCommandGroup.iterator().next(), inputSystemCommandExecuterPlatformSupport);
+        }
+    }
+    
+
+    /**
+     * Create a process builder
+     * 
+     * @param systemCommand the system command
+     * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @return the process builder
+     * @throws IllegalArgumentException In case of invalid parameters
+     */
+    public ProcessBuilder createProcessBuilder(ISystemCommand systemCommand, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+        validateParameters(systemCommand, inputSystemCommandExecuterPlatformSupport);
+        List<String> cmdList = createCommandLine(systemCommand, new SystemCommandExecuterPlatformSupportWrapper(inputSystemCommandExecuterPlatformSupport), systemCommand.getCommandList());
         ProcessBuilder builder = new ProcessBuilder();
         builder.command(cmdList);
-        builder.directory(new File(workingPath));
-        //builder.environment().clear();
-
-        // set environment variables
-        for (Map.Entry<String, String> e : environmentVariables.entrySet()) {
-            if (e.getKey() != null && !e.getKey().isBlank()) {
-                builder.environment().put(e.getKey(), e.getValue());
-            }
-        }
+        setWorkingPath(systemCommand, builder);
+        setEnvironmentVariables(systemCommand, builder);
         return builder;
     }
 
     
+    /**
+     * Create a process builder
+     * 
+     * @param systemCommandGroup the system command group
+     * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @return the process builder
+     * @throws IllegalArgumentException In case of invalid parameters
+     */
+    public ProcessBuilder createScriptProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+        validateParameters(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
+        ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport = new SystemCommandExecuterPlatformSupportWrapper(inputSystemCommandExecuterPlatformSupport); 
+        ISystemCommand primarySystemCommand = null;
+
+        List<String> cmdList = new ArrayList<>();
+
+        try {
+            Path file = ScriptUtil.getInstance().prepareTempPathAndScript(systemCommandGroup, systemCommandExecuterPlatformSupport);
+            LOG.debug("Set script [" + file.toString() + "]");
+            
+            // create a temp script to run multiple commands
+            Map<String, String> currentEnvironmentMap = null;
+            String currentWorkingPath = null;
+
+            String onSuccessOrErrorEnd = null;
+            Iterator<ISystemCommand> it = systemCommandGroup.iterator();
+            while (it.hasNext()) {
+                ISystemCommand systemCommand = it.next();
+                
+                if (primarySystemCommand == null) {
+                    primarySystemCommand = systemCommand;
+                    cmdList.addAll(createCommandLine(primarySystemCommand, systemCommandExecuterPlatformSupport, Arrays.asList(file.toString())));
+                    currentEnvironmentMap = primarySystemCommand.getProcessEnvironment().getEnvironmentVariables();
+                    currentEnvironmentMap.put("TOOLARIUM_TEMP", file.getParent().toString());
+                    currentWorkingPath = primarySystemCommand.getProcessEnvironment().getWorkingPath();
+                }
+
+                LOG.debug("Prepare command [" + systemCommand.toString(true) + "]");
+                systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEndOfLine());
+                
+                // set environment variables
+                currentEnvironmentMap = prepareEnvironmentVariables(systemCommandExecuterPlatformSupport, file, currentEnvironmentMap, systemCommand.getProcessEnvironment().getEnvironmentVariables());
+                LOG.debug("Set " + ProcessBuilderUtil.TEMP + " [" + file.getParent().toString() + "]");
+                currentEnvironmentMap.put(ProcessBuilderUtil.TEMP, file.getParent().toString());
+                
+                // the working directory
+                String newWorkingPath = systemCommand.getProcessEnvironment().getWorkingPath();
+                // TODO: relative path new File(base).toURI().relativize(new File(path).toURI()).getPath();
+                
+                if (newWorkingPath != null && !currentWorkingPath.equals(newWorkingPath)) {
+                    LOG.debug("Set in script working path to [" + newWorkingPath + "].");
+                    systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEnvironmentChangeDirectoryCommand() + newWorkingPath + systemCommandExecuterPlatformSupport.getEndOfLine());
+                    currentWorkingPath = newWorkingPath;
+                } else {
+                    LOG.debug("Keep script working path to [" + newWorkingPath + "].");
+                }
+
+                // the command
+                systemCommandExecuterPlatformSupport.writeToFile(file, 
+                                                                 /*ScriptUtil.getInstance().prepareCommandList(systemCommandExecuterPlatformSupport.getShellCommand(systemCommand))
+                                                                 + SystemCommand.SPACE*/ ""                            
+                                                                 + ScriptUtil.getInstance().prepareCommandList(systemCommand.getCommandList()));
+                // handle on success or error
+                if (systemCommand.getSystemCommandExecutionStatusResult() != null) {
+                    if (onSuccessOrErrorEnd != null) {
+                        systemCommandExecuterPlatformSupport.writeToFile(file, onSuccessOrErrorEnd);
+                        onSuccessOrErrorEnd = null;
+                    }
+                    
+                    switch (systemCommand.getSystemCommandExecutionStatusResult()) {
+                        case SUCCESS:
+                            systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getCommandOnSuccessStart());
+                            onSuccessOrErrorEnd = systemCommandExecuterPlatformSupport.getCommandOnSuccessEnd();
+                            break;
+                        case ERROR: 
+                            systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getCommandOnErrorStart());
+                            onSuccessOrErrorEnd = systemCommandExecuterPlatformSupport.getCommandOnErrorEnd();
+                            break;
+                        case SUCCESS_OR_ERROR: 
+                        default:
+                            onSuccessOrErrorEnd = null;
+                            systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEndOfLine());
+                    }
+                }
+            }
+            
+            // close script file
+            ScriptUtil.getInstance().closeScriptFile(systemCommandExecuterPlatformSupport, file);
+        } catch (IOException e) {
+            LOG.warn("Error occured: " + e.getMessage(), e);
+        }
+
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command(cmdList);
+        setWorkingPath(primarySystemCommand, builder);
+        setEnvironmentVariables(primarySystemCommand, builder);
+        return builder;
+    }
+
+
     /**
      * Prepare the environment variable 
      *
@@ -182,7 +292,10 @@ public final class ProcessBuilderUtil {
                                 + systemCommandExecuterPlatformSupport.getEnvironmentAssignCommand() 
                                 + systemCommandExecuterPlatformSupport.getEnvironmentAssignCommandEnd();
             LOG.debug("Unset environment variable [" + key + "].");
-            systemCommandExecuterPlatformSupport.writeToFile(file, envSetting + systemCommandExecuterPlatformSupport.getEndOfLine());
+            
+            if (!key.equals(ProcessBuilderUtil.TEMP)) {
+                systemCommandExecuterPlatformSupport.writeToFile(file, envSetting + systemCommandExecuterPlatformSupport.getEndOfLine());
+            }
         }
 
         // set new or changed environment variables
@@ -272,15 +385,59 @@ public final class ProcessBuilderUtil {
     /**
      * Validate input parameters
      * 
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommand the psystem command
      * @param systemCommandExecuterPlatformSupport the system command executer platform support
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    private void validateParameters(PlatformDependentSystemCommand platformDependentSystemCommand, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) {
-        if (platformDependentSystemCommand == null || systemCommandExecuterPlatformSupport == null) {
-            throw new IllegalArgumentException("Invalid parameters.");
+    private void validateParameters(ISystemCommand systemCommand, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) {
+        if (systemCommand == null | systemCommand.getProcessEnvironment() == null || systemCommand.getCommandList() == null) {
+            throw new IllegalArgumentException("Invalid system command parameters.");
         }
+    }
 
-        platformDependentSystemCommand.validate();
+
+    /**
+     * Validate input parameters
+     * 
+     * @param systemCommandGroup the system command group
+     * @param systemCommandExecuterPlatformSupport the system command executer platform support
+     * @throws IllegalArgumentException In case of invalid parameters
+     */
+    private void validateParameters(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) {
+        if (systemCommandGroup == null || systemCommandGroup.size() == 0) {
+            throw new IllegalArgumentException("Invalid system command group parameters.");
+        }
+    }
+
+
+    /**
+     * set the working path on the builder
+     * 
+     * @param systemCommand the system command
+     * @param builder the builder
+     */
+    private void setWorkingPath(ISystemCommand systemCommand, ProcessBuilder builder) {
+        final String workingPath = systemCommand.getProcessEnvironment().getWorkingPath();
+        LOG.debug("Use script working path to [" + workingPath + "].");
+        builder.directory(new File(workingPath));
+    }
+
+
+    /**
+     * set the environment variables
+     * 
+     * @param systemCommand the system command
+     * @param builder the builder
+     */
+    private void setEnvironmentVariables(ISystemCommand systemCommand, ProcessBuilder builder) {
+        //builder.environment().clear();
+
+        // set environment variables
+        final Map<String, String> environmentVariables = systemCommand.getProcessEnvironment().getEnvironmentVariables();
+        for (Map.Entry<String, String> e : environmentVariables.entrySet()) {
+            if (e.getKey() != null && !e.getKey().isBlank()) {
+                builder.environment().put(e.getKey(), e.getValue());
+            }
+        }
     }
 }

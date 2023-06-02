@@ -45,4 +45,11 @@ public interface IProcessLiveness extends Runnable {
      */
     java.lang.Process getProcess();
     
+    
+    /**
+     * Get the process id
+     *
+     * @return the process id
+     */
+    String getProcessId();
 }

@@ -3,8 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.builder;
 
+import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.dto.SystemCommand;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -17,8 +18,7 @@ import java.util.Set;
  * 
  * @author patrick
  */
-public final class JavaSystemCommandExecuterBuilder {
-    private SystemCommandExecuterBuilder parent;
+public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBuilder {
     private String jdkPath;
     private String javaMemorySettings;
     private String classPath;
@@ -34,10 +34,10 @@ public final class JavaSystemCommandExecuterBuilder {
     /**
      * Constructor for JavaSystemCommandExecuterBuilder
      * 
-     * @param parent the system command executer builder
+     * @param systemCommandGroupList the system command group list
      */
-    public JavaSystemCommandExecuterBuilder(SystemCommandExecuterBuilder parent) {
-        this.parent = parent;
+    public JavaSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+        super(systemCommandGroupList);
         this.jdkPath = null;
         this.javaMemorySettings = null;
         this.javaAgent = null;
@@ -46,6 +46,78 @@ public final class JavaSystemCommandExecuterBuilder {
         systemProperties = new LinkedHashMap<>();
         senstivieSettings = new HashSet<>();
         parameters = new LinkedHashMap<>();
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#shell(java.lang.String[])
+     */
+    @Override
+    public JavaSystemCommandExecuterBuilder shell(String... shell) {
+        return (JavaSystemCommandExecuterBuilder)super.shell(shell);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#user(java.lang.String)
+     */
+    @Override
+    public JavaSystemCommandExecuterBuilder user(String user) {
+        return (JavaSystemCommandExecuterBuilder)super.user(user);
+    }
+    
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#workingPath(java.lang.String)
+     */
+    @Override
+    public JavaSystemCommandExecuterBuilder workingPath(String workingPath) {
+        return (JavaSystemCommandExecuterBuilder)super.workingPath(workingPath);
+    }
+
+    
+    /**
+     * Set the os
+     *
+     * @param os the os
+     * @return the system command executer builder
+    @Override
+    public AbstractCommandExecuterBuilder os(String os) {
+        return (JavaSystemCommandExecuterBuilder)super.os(os);
+    }
+     */
+
+    
+    /**
+     * Set the os version
+     *
+     * @param os the os version
+     * @return the system command executer builder
+    @Override
+    public ISystemCommandExecuterBuilder osVersion(String osVersion) {
+        return (JavaSystemCommandExecuterBuilder)super.osVersion(osVersion);
+    }
+    */
+
+    
+    /**
+     * Set the architecture
+     *
+     * @param architecture the architecture
+     * @return the system command executer builder
+    @Override
+    public ISystemCommandExecuterBuilder architecture(String architecture) {
+        return (JavaSystemCommandExecuterBuilder)super.architecture(architecture);
+    }
+    */
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#environmentVariable(java.lang.String, java.lang.String)
+     */
+    @Override
+    public JavaSystemCommandExecuterBuilder environmentVariable(String key, String value) {
+        return (JavaSystemCommandExecuterBuilder)super.environmentVariable(key, value);
     }
 
     
@@ -75,10 +147,13 @@ public final class JavaSystemCommandExecuterBuilder {
      *                (The -server flag increases the default size to 128M.)
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaMemorySettings(String initialSize, String maxSize) {
+    public JavaSystemCommandExecuterBuilder javaMemory(String initialSize, String maxSize) {
         this.javaMemorySettings = "";
 
         if (initialSize != null && !initialSize.isBlank()) {
+            if (!javaMemorySettings.isBlank()) {
+                javaMemorySettings += SystemCommand.SPACE;
+            }
             this.javaMemorySettings += "-Xms" + initialSize.trim();
         }
 
@@ -129,7 +204,7 @@ public final class JavaSystemCommandExecuterBuilder {
      * @param main the java main
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder main(String main) {
+    public JavaSystemCommandExecuterBuilder javaMain(String main) {
         if (main != null) {
             this.main = main.trim();
         }
@@ -144,7 +219,7 @@ public final class JavaSystemCommandExecuterBuilder {
      * @param user the jvm user
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder user(String user) {
+    public JavaSystemCommandExecuterBuilder javaUser(String user) {
         if (user != null) {
             systemProperties.put("user.name", user.trim());
         }
@@ -154,24 +229,12 @@ public final class JavaSystemCommandExecuterBuilder {
     
     
     /**
-     * Set the working path
-     *
-     * @param workingPath the workingPath
-     * @return the java system command executer builder
-     */
-    public JavaSystemCommandExecuterBuilder workingPath(String workingPath) {
-        parent.workingPath(workingPath);
-        return this;
-    }
-
-    
-    /**
      * Set the java temp path
      *
      * @param tempPath the temp path
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder tempPath(String tempPath) {
+    public JavaSystemCommandExecuterBuilder javaTempPath(String tempPath) {
         systemProperties.put("java.io.tmpdir", tempPath.trim());
         return this;
     }
@@ -182,21 +245,8 @@ public final class JavaSystemCommandExecuterBuilder {
      *
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder headless() {
+    public JavaSystemCommandExecuterBuilder javaHeadless() {
         systemProperties.put("java. awt. headless", "true");
-        return this;
-    }
-
-    
-    /**
-     * Add an environment variable
-     *
-     * @param key the key
-     * @param value the value
-     * @return the java system command executer builder
-     */
-    public JavaSystemCommandExecuterBuilder environmentVariable(String key, String value) {
-        parent.environmentVariable(key, value);
         return this;
     }
 
@@ -237,82 +287,55 @@ public final class JavaSystemCommandExecuterBuilder {
      * @param parameter program parameter to add
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder parameters(String parameter) {
+    public JavaSystemCommandExecuterBuilder parameter(String parameter) {
         parameters.put(parameter, "");
         return this;
     }
 
-    
-    /**
-     * Add a new jvm / java system command
-     * 
-     * @param main the java main class
-     * @return the jvm / java system command executer builder
-     */
-    public JavaSystemCommandExecuterBuilder addJVMSystemCommand(String main) {
-        buildJavaCommand();
-        return parent.addJVMSystemCommand(main);
-    }
-    
-    
-    /**
-     * Add a new system command
-     * 
-     * @return the system command executer builder
-     */
-    public SystemCommandExecuterBuilder addSystemCommand() {
-        buildJavaCommand();
-        return parent.addSystemCommand();
-    }
-
-    
-    /**
-     * Build the system executer
-     *
-     * @return the system executer
-     */
-    public ISystemCommandExecuter build() {
-        buildJavaCommand();
-        return parent.build();
-    }
-
 
     /**
-     * Build the java command
-     * 
-     * @throws IllegalArgumentException In case of invalid parameter combination
+     * @see com.github.toolarium.system.command.builder.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.ISystemCommandGroupList)
+     * @throws IllegalArgumentException In case of an invalid argument
      */
-    private void buildJavaCommand() throws IllegalArgumentException {
-        
+    @Override
+    protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
         if (jdkPath != null && !jdkPath.isBlank()) {
-            parent.addToCommand(jdkPath);
+            command(jdkPath);
         }
         
-        parent.addToCommand(javaExecutable, javaExecutable);
-        
-        if (javaMemorySettings != null && !javaMemorySettings.isBlank()) {
-            parent.addToCommand(javaMemorySettings);
-        }
+        command(javaExecutable, javaExecutable);
         
         if (classPath != null && !classPath.isBlank()) {
-            parent.addToCommand("-cp" + SystemCommand.SPACE + classPath);
-        }
-        
-        if (systemProperties != null && !systemProperties.isEmpty()) {
-            parent.addToCommand(systemProperties, "-D", false, senstivieSettings);
+            command("-cp" + SystemCommand.SPACE + classPath);
         }
         
         if (javaAgent != null) {
-            parent.addToCommand("-javaagent" + SystemCommand.SPACE + javaAgent);
+            command("-javaagent" + SystemCommand.SPACE + javaAgent);
         }
         
+        if (javaMemorySettings != null && !javaMemorySettings.isBlank()) {
+            command(javaMemorySettings);
+        }
+
+        if (systemProperties != null && !systemProperties.isEmpty()) {
+            boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+            boolean encapsulateExpression;
+            if (isWindows) {
+                encapsulateExpression = true;
+            } else {
+                encapsulateExpression = false;
+                systemCommandGroupList.forceSystenCommandGroupRunAsScript();
+            }
+            command(systemProperties, "-D", !encapsulateExpression, encapsulateExpression, senstivieSettings);
+        }
+
         if (main == null || main.isBlank()) {
             throw new IllegalArgumentException("Missing java main class!");
         }
-        parent.addToCommand(main);
-        
+        command(main);
+
         if (parameters != null && !parameters.isEmpty()) {
-            parent.addToCommand(parameters, null, false);
+            command(parameters, null, false, true);
         }
     }
 }

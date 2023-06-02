@@ -5,13 +5,14 @@
  */
 package com.github.toolarium.system.command.process.util;
 
-import com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport;
-import com.github.toolarium.system.command.dto.PlatformDependentSystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,25 +87,50 @@ public final class ScriptUtil {
     /**
      * Prepare the temp path and the script file
      * 
-     * @param platformDependentSystemCommand the platform dependent system command
+     * @param systemCommandGroup the system command group
+     * @return the temp path
+     */
+    public Path prepareTempPath(ISystemCommandGroup systemCommandGroup) {
+        return  Paths.get(ScriptUtil.getInstance().getBaseTempPath() + "/" + systemCommandGroup.getId());
+    }
+
+    
+    /**
+     * Prepare the temp path and the script file
+     * 
+     * @param systemCommandGroup the system command group
      * @param systemCommandExecuterPlatformSupport the system command executer platform support
      * @return the temp script file
      * @throws IOException In case of an I/O issue
      */
-    public Path prepareTempPathAndScript(PlatformDependentSystemCommand platformDependentSystemCommand, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) throws IOException {
+    public Path prepareTempPathAndScript(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) throws IOException {
         
-        Path tempPath = Files.createTempDirectory(getBaseTempPath(), null);
-        platformDependentSystemCommand.setTempPath(tempPath);
+        File tempFile = createTempFile(systemCommandGroup, "run" + systemCommandExecuterPlatformSupport.getScriptFileExtension());
+        tempFile.setExecutable(true);
+        
+        // create the script file
+        createScriptFile(systemCommandExecuterPlatformSupport, tempFile.toPath());
+        return tempFile.toPath();
+    }
+
+    
+    /**
+     * Prepare the temp path and the script file
+     * 
+     * @param systemCommandGroup the system command group
+     * @param filename the filename
+     * @return the temp file
+     * @throws IOException In case of an I/O issue
+     */
+    public File createTempFile(ISystemCommandGroup systemCommandGroup, String filename) throws IOException {
+        Path tempPath = prepareTempPath(systemCommandGroup);
+        tempPath.toFile().mkdirs();
         
         // create script file on temp folder
-        //Path file = Files.createTempFile(tempPath, "run-", systemCommandExecuterPlatformSupport.getScriptFileExtension()/*, attrs*/);
-        File file = new File(tempPath.toFile(), "run" + systemCommandExecuterPlatformSupport.getScriptFileExtension());
+        File file = new File(tempPath.toFile(), filename);
         file.createNewFile();
-        file.setExecutable(true);
 
-        // create the script file
-        createScriptFile(systemCommandExecuterPlatformSupport, file.toPath());
-        return file.toPath();
+        return file;
     }
 
 
@@ -149,7 +175,7 @@ public final class ScriptUtil {
         if (systemCommandExecuterPlatformSupport.getScriptFileComment() != null && !systemCommandExecuterPlatformSupport.getScriptFileComment().isBlank()) {
             final String comment = systemCommandExecuterPlatformSupport.getScriptFileComment() + SystemCommand.SPACE;
             final String line = prepareString(systemCommandExecuterPlatformSupport.getScriptFileComment(), 80);
-            systemCommandExecuterPlatformSupport.writeToFile(file, line + systemCommandExecuterPlatformSupport.getEndOfLine()
+            systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEndOfLine() + line + systemCommandExecuterPlatformSupport.getEndOfLine()
                                                                     + comment + "EOF" + systemCommandExecuterPlatformSupport.getEndOfLine()
                                                                     + line + systemCommandExecuterPlatformSupport.getEndOfLine());
         }

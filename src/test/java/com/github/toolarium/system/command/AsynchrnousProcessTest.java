@@ -8,6 +8,7 @@ package com.github.toolarium.system.command;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
  */
 public class AsynchrnousProcessTest extends AbstractProcessTest {
     private static final Logger LOG = LoggerFactory.getLogger(AsynchrnousProcessTest.class);
+    private static final String KEY2 = "key2";
+    private static final String KEY1 = "key1";
     
     
     /**
@@ -44,9 +47,10 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
         SystemCommandExecuterFactory.getInstance().startTempFolderCleanupService();
-        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command).build().runAsynchronous(ProcessInputStreamSource.INHERIT, 
-                                                                                                                                                   outputStream, 
-                                                                                                                                                   errorOutputStream), 
+        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command)
+                .build()
+                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream, errorOutputStream), 
                                                                outputStream, errorOutputStream,
                                                                "ok",     // expected standard out! 
                                                                "",       // no standard error!
@@ -69,9 +73,11 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         String command2 = "echo ok2";
         ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
-        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterBuilder.create().addToCommand(command1).addSystemCommand().addToCommand(command2).build().runAsynchronous(ProcessInputStreamSource.INHERIT, 
-                                                                                                                                                                                              outputStream, 
-                                                                                                                                                                                              errorOutputStream), 
+        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command1).onSuccessOrError()
+                .system().command(command2)
+                .build()
+                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream,  errorOutputStream), 
                                                                outputStream, errorOutputStream,
                                                                "ok1\r\nok2",  // expected standard out! 
                                                                "",       // no standard error!
@@ -102,36 +108,36 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         
         Map<String, String> env = new HashMap<>();
         env.putAll(System.getenv());
-        env.put("key1", "myValue1");
-        env.put("key2", "myValue2");
+        env.put(KEY1, "myValue1");
+        env.put(KEY2, "myValue2");
         
         String qm = ""; // quotation marks
-        String eps = ""; // empty parameter space
+        String eps1 = ""; // empty parameter space
+        String eps2 = ""; // empty parameter space
         if (isWindows()) {
             qm = "\"";
-            eps = " ";            
+            eps1 = SystemCommand.SPACE + SystemCommand.SPACE;
+            eps2 = SystemCommand.SPACE;
         }
-        String command1 = "echo " + prepareGetEnvValue("key1") + " " + prepareGetEnvValue("key2") + " " + prepareGetEnvValue("key3");
-        String command2 = "echo " + prepareGetEnvValue("key1") + " " + prepareGetEnvValue("key2") + " " + prepareGetEnvValue("key3");
+        String command1 = "echo " + prepareGetEnvValue(KEY1, false) + SystemCommand.SPACE + prepareGetEnvValue(KEY2, false) + SystemCommand.SPACE + prepareGetEnvValue("key3", false);
+        String command2 = "echo " + prepareGetEnvValue(KEY1, true) + SystemCommand.SPACE + prepareGetEnvValue(KEY2, true) + SystemCommand.SPACE + prepareGetEnvValue("key3", true);
         
         ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
-        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterBuilder.create()
-                                                                    .workingPath("build")
-                                                                    .environmentVariable("key1", "myValue1").environmentVariable("key2", "myValue2").addToCommand(command1)
-                                                                    .addSystemCommand().workingPath("build/classes")
-                                                                    .environmentVariable("key1", "myValuea").environmentVariable("key3", "myValueb").addToCommand(command2)
-                                                                    .addSystemCommand()
-                                                                    .addToCommand("echo")
-                                                                    .addToCommand(systemProperties, "-D", true, new LinkedHashSet<>(Arrays.asList("password")))
-                                                                    .build().runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream, errorOutputStream), 
+        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system().command(command1).workingPath("build").environmentVariable(KEY1, "myValue1").environmentVariable(KEY2, "myValue2").onSuccess()
+                .system().command(command2).workingPath("build").environmentVariable(KEY1, "myValuea").environmentVariable(KEY2, "myValueb").onError()
+                .system().command(command2).workingPath("build/classes").environmentVariable(KEY1, "myErrorValue1").environmentVariable("key3", "myErrorValue2").onSuccessOrError()
+                .system().command("echo").command(systemProperties, "-D", false, true, new LinkedHashSet<>(Arrays.asList("password")))
+                .build()
+                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream, errorOutputStream), 
                                                                outputStream, errorOutputStream,
-                                                               "myValue1 myValue2" + eps + "\r\nmyValuea " + eps + "myValueb\r\n-Dmyapp=" + qm + "the app" + qm + " -Dpassword=" + qm + "abcd" + qm, // expected standard error!
+                                                               "myValue1 myValue2" + eps1 + "\r\nmyValuea myValueb" + eps2 + "\r\n" + qm + "-Dmyapp=the app" + qm + SystemCommand.SPACE + qm + "-Dpassword=abcd" + qm, // expected standard error!
                                                                "",       // no standard error!
                                                                new File(System.getProperty("user.dir") + "/build").getAbsoluteFile().toString(), // working path
                                                                env,      // no environment
                                                                0,        // return value
-                                                               command1, command2, "echo -Dmyapp=\"the app\" -Dpassword=...");
+                                                               command1, command2, command2, "echo \"-Dmyapp=the app\" \"-Dpassword=...\"");
         assertNotNull(process);
     }
 
@@ -168,12 +174,14 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
 
             String result = ProcessStreamUtil.getInstance().removeCR(outputStream.toString());
             LOG.debug("Compare result | [" + result + "] == [" + expectedOutput + "].");
-            /*
-            for (int i = 0; i < result.length(); i++) {
-                assertEquals(result.charAt(i), expectedOutput.charAt(i), "Pos:" + i);
+            
+            if (!result.equals(expectedOutput)) {
+                
+                for (int i = 0; i < result.length(); i++) {
+                    assertEquals(result.charAt(i), expectedOutput.charAt(i), "Pos:" + i);
+                }
+                assertEquals(result.length(), expectedOutput.length());
             }
-            assertEquals(result.length(), expectedOutput.length());
-            */
             assertEquals(result, expectedOutput);
         }
 

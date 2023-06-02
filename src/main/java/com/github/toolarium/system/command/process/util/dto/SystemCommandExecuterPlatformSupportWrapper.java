@@ -6,7 +6,7 @@
 package com.github.toolarium.system.command.process.util.dto;
 
 import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
     
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#writeToFile(java.nio.file.Path, java.lang.String)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#writeToFile(java.nio.file.Path, java.lang.String)
      */
     @Override
     public void writeToFile(Path file, String content) throws IOException {
@@ -44,7 +44,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getSudo(java.lang.String)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getSudo(java.lang.String)
      */
     @Override
     public List<String> getSudo(String username) {
@@ -53,16 +53,25 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
 
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getShellCommand(com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.ISystemCommand)
      */
     @Override
-    public List<String> getShellCommand(ISystemCommand systemCommand) {
-        return handleNull(systemCommandExecuterPlatformSupport.getShellCommand(systemCommand));
+    public List<String> getShellStartCommand(ISystemCommand systemCommand) {
+        return handleNull(systemCommandExecuterPlatformSupport.getShellStartCommand(systemCommand));
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileHeader()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.ISystemCommand)
+     */
+    @Override
+    public List<String> getShellEndCommand(ISystemCommand systemCommand) {
+        return handleNull(systemCommandExecuterPlatformSupport.getShellEndCommand(systemCommand));
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getScriptFileHeader()
      */
     @Override
     public String getScriptFileHeader() {
@@ -71,7 +80,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileFooter()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getScriptFileFooter()
      */
     @Override
     public String getScriptFileFooter() {
@@ -80,7 +89,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileExtension()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getScriptFileExtension()
      */
     @Override
     public String getScriptFileExtension() {
@@ -89,7 +98,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getScriptFileComment()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getScriptFileComment()
      */
     @Override
     public String getScriptFileComment() {
@@ -98,7 +107,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentUnsetCommand()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEnvironmentUnsetCommand()
      */
     @Override
     public String getEnvironmentUnsetCommand() {
@@ -107,7 +116,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentSetCommand()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEnvironmentSetCommand()
      */
     @Override
     public String getEnvironmentSetCommand() {
@@ -116,7 +125,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentChangeDirectoryCommand()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEnvironmentChangeDirectoryCommand()
      */
     @Override
     public String getEnvironmentChangeDirectoryCommand() {
@@ -125,7 +134,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
     
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommandEnd()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommandEnd()
      */
     @Override
     public String getEnvironmentAssignCommandEnd() {
@@ -134,7 +143,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommand()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEnvironmentAssignCommand()
      */
     @Override
     public String getEnvironmentAssignCommand() {
@@ -143,7 +152,43 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommandExecuterPlatformSupport#getEndOfLine()
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnSuccessStart()
+     */
+    @Override
+    public String getCommandOnSuccessStart() {
+        return handleNull(systemCommandExecuterPlatformSupport.getCommandOnSuccessStart());
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnSuccessEnd()
+     */
+    @Override
+    public String getCommandOnSuccessEnd() {
+        return handleNull(systemCommandExecuterPlatformSupport.getCommandOnSuccessEnd());
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnErrorStart()
+     */
+    @Override
+    public String getCommandOnErrorStart() {
+        return handleNull(systemCommandExecuterPlatformSupport.getCommandOnErrorStart());
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnErrorEnd()
+     */
+    @Override
+    public String getCommandOnErrorEnd() {
+        return handleNull(systemCommandExecuterPlatformSupport.getCommandOnErrorEnd());
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getEndOfLine()
      */
     @Override
     public String getEndOfLine() {

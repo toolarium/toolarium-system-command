@@ -116,6 +116,16 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
     
     /**
+     * Set the environment variable key / value
+     *
+     * @param environmentVariables the environment variables to set
+     */
+    public void setEnvironmentVariables(Map<String, String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
+    }
+
+    
+    /**
      * Clear the environment variables
      */
     public void clearEnvironmentVariables() {
