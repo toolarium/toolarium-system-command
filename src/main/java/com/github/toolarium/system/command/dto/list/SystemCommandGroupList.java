@@ -3,9 +3,11 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.dto;
+package com.github.toolarium.system.command.dto.list;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -17,6 +19,7 @@ import java.util.Objects;
 
 
 /**
+ * Implements the {@link ISystemCommandGroupList}.
  * 
  * @author patrick
  */
@@ -38,7 +41,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#getId()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#getId()
      */
     @Override
     public String getId() {
@@ -47,7 +50,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#add(com.github.toolarium.system.command.ISystemCommand[])
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(com.github.toolarium.system.command.dto.ISystemCommand[])
      */
     @Override
     public void add(ISystemCommand... systemCommands) {
@@ -56,7 +59,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#add(java.util.List)
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(java.util.List)
      */
     @Override
     public void add(List<? extends ISystemCommand> systemCommands) {
@@ -75,7 +78,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
         
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#add(com.github.toolarium.system.command.dto.ISystemCommandGroup)
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(com.github.toolarium.system.command.dto.group.ISystemCommandGroup)
      */
     @Override
     public void add(ISystemCommandGroup systemCommandGroup) {
@@ -84,10 +87,30 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#forceSystenCommandGroupRunAsScript()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#runAsScript()
      */
     @Override
-    public void forceSystenCommandGroupRunAsScript() {
+    public boolean runAsScript() {
+        boolean runAsScript = false;
+        
+        if (systemCommandGroupList != null && !systemCommandGroupList.isEmpty()) {
+            for (ISystemCommandGroup systemCommandGroup : systemCommandGroupList) {
+                if (systemCommandGroup.runAsScript()) {
+                    runAsScript = true;
+                    break;
+                }
+            }
+        }
+        
+        return runAsScript;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#forceRunAsScript()
+     */
+    @Override
+    public void forceRunAsScript() {
         if (systemCommandGroupList != null && !systemCommandGroupList.isEmpty()) {
             systemCommandGroupList.get(systemCommandGroupList.size() - 1).forceRunAsScript();
         }
@@ -95,7 +118,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#newGroup()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#newGroup()
      */
     @Override
     public void newGroup() {
@@ -108,7 +131,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#iterator()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#iterator()
      */
     @Override
     public Iterator<ISystemCommandGroup> iterator() {
@@ -117,7 +140,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#size()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#size()
      */
     @Override
     public int size() {
@@ -168,7 +191,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroupList#toString(boolean)
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#toString(boolean)
      */
     @Override
     public String toString(boolean forDisplay) {

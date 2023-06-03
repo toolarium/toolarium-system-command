@@ -3,10 +3,10 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.dto;
+package com.github.toolarium.system.command.process.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroup;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
@@ -97,7 +97,7 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
 
     
     /**
-     * @see com.github.toolarium.system.command.process.dto.AbstractProcess#getExitValue()
+     * @see com.github.toolarium.system.command.process.impl.AbstractProcess#getExitValue()
      */
     @Override
     public Integer getExitValue() {
@@ -227,13 +227,13 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
         
         Iterator<ISystemCommandGroup> it = getSystemCommandGroupList().iterator();
         while (it.hasNext()) {
-            Path tempPath = ScriptUtil.getInstance().prepareTempPath(it.next());
+            Path path = ScriptUtil.getInstance().prepareTempPath(it.next());
             
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Delete directory [" + tempPath + "]...");
+                LOG.debug("Delete directory [" + path + "]...");
             }
             
-            ProcessStreamUtil.getInstance().deleteDirectory(tempPath);
+            ProcessStreamUtil.getInstance().deleteDirectory(path);
         }
     }
 
@@ -249,7 +249,7 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
     
     
     /**
-     * @see com.github.toolarium.system.command.process.dto.AbstractProcess#toString()
+     * @see com.github.toolarium.system.command.process.impl.AbstractProcess#toString()
      */
     @Override
     public String toString() {

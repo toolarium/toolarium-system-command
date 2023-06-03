@@ -1,30 +1,28 @@
 /*
- * JavaSystemCommandExecuterBuilder.java
+ * AbstractJavaSystemCommandExecuteBuilder.java
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder;
+package com.github.toolarium.system.command.builder.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
- * Java system command executer builder
+ * The abstract java system command executer builder
  * 
  * @author patrick
  */
-public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBuilder {
+public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCommandExecuterBuilder {
     private String jdkPath;
     private String javaMemorySettings;
     private String classPath;
     private String javaExecutable;
     private String javaAgent;
-    private String main;
     private Map<String, String> systemProperties;
     private Set<String> senstivieSettings;
     private Map<String, String> parameters;
@@ -32,16 +30,15 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
     
     
     /**
-     * Constructor for JavaSystemCommandExecuterBuilder
+     * Constructor for AbstractJavaSystemCommandExecuteBuilder
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public JavaSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public AbstractJavaSystemCommandExecuteBuilder(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
         this.jdkPath = null;
         this.javaMemorySettings = null;
         this.javaAgent = null;
-        this.main = null;
         javaExecutable = "java";
         systemProperties = new LinkedHashMap<>();
         senstivieSettings = new HashSet<>();
@@ -53,8 +50,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#shell(java.lang.String[])
      */
     @Override
-    public JavaSystemCommandExecuterBuilder shell(String... shell) {
-        return (JavaSystemCommandExecuterBuilder)super.shell(shell);
+    public AbstractJavaSystemCommandExecuteBuilder shell(String... shell) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.shell(shell);
     }
 
 
@@ -62,8 +59,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#user(java.lang.String)
      */
     @Override
-    public JavaSystemCommandExecuterBuilder user(String user) {
-        return (JavaSystemCommandExecuterBuilder)super.user(user);
+    public AbstractJavaSystemCommandExecuteBuilder user(String user) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.user(user);
     }
     
 
@@ -71,8 +68,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#workingPath(java.lang.String)
      */
     @Override
-    public JavaSystemCommandExecuterBuilder workingPath(String workingPath) {
-        return (JavaSystemCommandExecuterBuilder)super.workingPath(workingPath);
+    public AbstractJavaSystemCommandExecuteBuilder workingPath(String workingPath) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.workingPath(workingPath);
     }
 
     
@@ -82,8 +79,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param os the os
      * @return the system command executer builder
     @Override
-    public AbstractCommandExecuterBuilder os(String os) {
-        return (JavaSystemCommandExecuterBuilder)super.os(os);
+    public AbstractJavaSystemCommandExecuteBuilder os(String os) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.os(os);
     }
      */
 
@@ -94,8 +91,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param os the os version
      * @return the system command executer builder
     @Override
-    public ISystemCommandExecuterBuilder osVersion(String osVersion) {
-        return (JavaSystemCommandExecuterBuilder)super.osVersion(osVersion);
+    public AbstractJavaSystemCommandExecuteBuilder osVersion(String osVersion) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.osVersion(osVersion);
     }
     */
 
@@ -106,8 +103,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param architecture the architecture
      * @return the system command executer builder
     @Override
-    public ISystemCommandExecuterBuilder architecture(String architecture) {
-        return (JavaSystemCommandExecuterBuilder)super.architecture(architecture);
+    public AbstractJavaSystemCommandExecuteBuilder architecture(String architecture) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.architecture(architecture);
     }
     */
 
@@ -116,8 +113,8 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#environmentVariable(java.lang.String, java.lang.String)
      */
     @Override
-    public JavaSystemCommandExecuterBuilder environmentVariable(String key, String value) {
-        return (JavaSystemCommandExecuterBuilder)super.environmentVariable(key, value);
+    public AbstractJavaSystemCommandExecuteBuilder environmentVariable(String key, String value) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.environmentVariable(key, value);
     }
 
     
@@ -127,7 +124,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param jdkPath the jdk path
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder jdkPath(String jdkPath) {
+    public AbstractJavaSystemCommandExecuteBuilder jdkPath(String jdkPath) {
         if (jdkPath != null) {
             this.jdkPath = jdkPath.trim();
         }
@@ -147,7 +144,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      *                (The -server flag increases the default size to 128M.)
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaMemory(String initialSize, String maxSize) {
+    public AbstractJavaSystemCommandExecuteBuilder javaMemory(String initialSize, String maxSize) {
         this.javaMemorySettings = "";
 
         if (initialSize != null && !initialSize.isBlank()) {
@@ -174,7 +171,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param javaExecutable the java executable to set
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaExecutable(String javaExecutable) {
+    public AbstractJavaSystemCommandExecuteBuilder javaExecutable(String javaExecutable) {
         if (javaExecutable != null) {
             this.javaExecutable = javaExecutable.trim();
         }
@@ -189,24 +186,9 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param javaAgent the java agent to set
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaAgent(String javaAgent) {
+    public AbstractJavaSystemCommandExecuteBuilder javaAgent(String javaAgent) {
         if (javaAgent != null) {
             this.javaAgent = javaAgent.trim();
-        }
-        
-        return this;
-    }
-
-    
-    /**
-     * Set the java main
-     *
-     * @param main the java main
-     * @return the java system command executer builder
-     */
-    public JavaSystemCommandExecuterBuilder javaMain(String main) {
-        if (main != null) {
-            this.main = main.trim();
         }
         
         return this;
@@ -219,7 +201,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param user the jvm user
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaUser(String user) {
+    public AbstractJavaSystemCommandExecuteBuilder javaUser(String user) {
         if (user != null) {
             systemProperties.put("user.name", user.trim());
         }
@@ -234,7 +216,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param tempPath the temp path
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaTempPath(String tempPath) {
+    public AbstractJavaSystemCommandExecuteBuilder javaTempPath(String tempPath) {
         systemProperties.put("java.io.tmpdir", tempPath.trim());
         return this;
     }
@@ -245,7 +227,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      *
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder javaHeadless() {
+    public AbstractJavaSystemCommandExecuteBuilder javaHeadless() {
         systemProperties.put("java. awt. headless", "true");
         return this;
     }
@@ -258,7 +240,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param value the value
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder systemProperty(String key, String value) {
+    public AbstractJavaSystemCommandExecuteBuilder systemProperty(String key, String value) {
         return systemProperty(key, value, false);
     }
 
@@ -271,7 +253,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param isSenstivieValue true if the value is sensitive
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder systemProperty(String key, String value, boolean isSenstivieValue) {
+    public AbstractJavaSystemCommandExecuteBuilder systemProperty(String key, String value, boolean isSenstivieValue) {
         systemProperties.put(key, value);
         
         if (isSenstivieValue && !senstivieSettings.contains(key)) {
@@ -287,14 +269,14 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
      * @param parameter program parameter to add
      * @return the java system command executer builder
      */
-    public JavaSystemCommandExecuterBuilder parameter(String parameter) {
+    public AbstractJavaSystemCommandExecuteBuilder parameter(String parameter) {
         parameters.put(parameter, "");
         return this;
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.builder.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
@@ -324,18 +306,24 @@ public class JavaSystemCommandExecuterBuilder extends AbstractCommandExecuterBui
                 encapsulateExpression = true;
             } else {
                 encapsulateExpression = false;
-                systemCommandGroupList.forceSystenCommandGroupRunAsScript();
+                systemCommandGroupList.forceRunAsScript();
             }
             command(systemProperties, "-D", !encapsulateExpression, encapsulateExpression, senstivieSettings);
         }
 
-        if (main == null || main.isBlank()) {
-            throw new IllegalArgumentException("Missing java main class!");
-        }
-        command(main);
+        command(javaMain());
 
         if (parameters != null && !parameters.isEmpty()) {
             command(parameters, null, false, true);
         }
     }
+
+
+    /**
+     * Get the java main
+     * 
+     * @return the java main 
+     * @throws IllegalArgumentException In case of an invalid input
+     */
+    protected abstract String javaMain();
 }

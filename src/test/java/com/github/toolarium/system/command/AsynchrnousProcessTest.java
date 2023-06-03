@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
-import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.File;
@@ -46,7 +46,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         String command = "echo ok";
         ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
-        SystemCommandExecuterFactory.getInstance().startTempFolderCleanupService();
+        SystemCommandExecuterFactory.getInstance().startFolderCleanupService();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command)
                 .build()
@@ -99,8 +99,8 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
      */
     @Test
     public void echoMultipleCommandInSameProcessWithEnvironmenVariablesTest() throws InterruptedException {
-        SystemCommandExecuterFactory.getInstance().stopTempFolderCleanupService();
-        SystemCommandExecuterFactory.getInstance().startTempFolderCleanupService(0, 500, TimeUnit.MILLISECONDS);
+        SystemCommandExecuterFactory.getInstance().stopFolderCleanupService();
+        SystemCommandExecuterFactory.getInstance().startFolderCleanupService(0, 500, TimeUnit.MILLISECONDS);
         
         Map<String, String> systemProperties = new LinkedHashMap<>();
         systemProperties.put("myapp", "the app");

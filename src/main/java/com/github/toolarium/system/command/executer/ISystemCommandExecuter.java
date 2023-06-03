@@ -7,12 +7,12 @@ package com.github.toolarium.system.command.executer;
 
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 
 
 /**
- * Defines the system command executer
+ * The system command executer.
  *
  * @author patrick
  */

@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.toolarium.system.command.dto.SystemCommandGroup;
+import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.IProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;

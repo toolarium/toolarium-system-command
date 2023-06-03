@@ -3,17 +3,17 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.env.dto;
+package com.github.toolarium.system.command.dto.env;
 
-import com.github.toolarium.system.command.process.env.IProcessEnvironment;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+
 /**
- * Defines the process environment
+ * Implements the {@link IProcessEnvironment}.
  * 
  * @author patrick
  */
@@ -48,7 +48,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getUser()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getUser()
      */
     @Override
     public String getUser() {
@@ -67,7 +67,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getWorkingPath()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getWorkingPath()
      */
     @Override
     public String getWorkingPath() {
@@ -86,7 +86,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
         
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getEnvironmentVariables()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getEnvironmentVariables()
      */
     @Override
     public Map<String, String> getEnvironmentVariables() {
@@ -95,7 +95,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getEnvironmentVariable(java.lang.String)
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getEnvironmentVariable(java.lang.String)
      */
     @Override
     public String getEnvironmentVariable(String key) {
@@ -134,7 +134,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
 
     
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getOS()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getOS()
      */
     @Override
     public String getOS() {
@@ -143,7 +143,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getOSVersion()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getOSVersion()
      */
     @Override
     public String getOSVersion() {
@@ -152,7 +152,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.process.env.IProcessEnvironment#getArchitecture()
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#getArchitecture()
      */
     @Override
     public String getArchitecture() {

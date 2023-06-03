@@ -3,14 +3,15 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.dto;
 
-import com.github.toolarium.system.command.process.env.IProcessEnvironment;
+import com.github.toolarium.system.command.dto.env.IProcessEnvironment;
 import java.util.List;
 
 
 /**
- * The command
+ * The system command which contains all information to execute a command
+ * such as environment, shell and a list of commands.
  * 
  * @author patrick
  */

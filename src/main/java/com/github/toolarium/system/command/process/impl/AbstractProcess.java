@@ -3,9 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.dto;
+package com.github.toolarium.system.command.process.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IProcess;
 import java.time.Duration;
 import java.time.Instant;

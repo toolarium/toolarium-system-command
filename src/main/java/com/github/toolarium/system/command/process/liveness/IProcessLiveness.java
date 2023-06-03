@@ -8,7 +8,7 @@ package com.github.toolarium.system.command.process.liveness;
 import java.time.Instant;
 
 /**
- * Defines the process liveness
+ * The process liveness
  * 
  * @author patrick
  */

@@ -1,28 +1,39 @@
 /*
- * TempFolderCleanupService.java
+ * FolderCleanupService.java
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.temp;
+package com.github.toolarium.system.command.process.folder;
 
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
-import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
- * Implements a temp folder cleanip servivce
+ * Implements a folder cleanip servivce
  *  
  * @author patrick
  */
-public class TempFolderCleanupService implements Runnable {
-    private static final Logger LOG = LoggerFactory.getLogger(TempFolderCleanupService.class);
+public class FolderCleanupService implements Runnable {
+    private static final Logger LOG = LoggerFactory.getLogger(FolderCleanupService.class);
+    private Path basePath;
  
+    
+    /**
+     * Constructor for FolderCleanupService
+     *
+     * @param basePath the base path
+     */
+    public FolderCleanupService(Path basePath) {
+        this.basePath = basePath;
+    }
 
+    
     /**
      * @see java.lang.Runnable#run()
      */
@@ -30,7 +41,7 @@ public class TempFolderCleanupService implements Runnable {
     public void run() {
         try {
             try {
-                Files.find(ScriptUtil.getInstance().getBaseTempPath(), Integer.MAX_VALUE, (filePath, fileAttr) -> fileAttr.isRegularFile()).forEach(file -> {
+                Files.find(basePath, Integer.MAX_VALUE, (filePath, fileAttr) -> fileAttr.isRegularFile()).forEach(file -> {
                     if (file.toFile().getName().endsWith(".pid")) {
                         Long pid = readPidFile(file);
                         if (!ProcessBuilderUtil.getInstance().isProcessRunning(pid)) {

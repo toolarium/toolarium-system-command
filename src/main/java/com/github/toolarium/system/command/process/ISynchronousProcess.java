@@ -5,6 +5,7 @@
  */
 package com.github.toolarium.system.command.process;
 
+
 /**
  * Defines the synchronous process
  *  

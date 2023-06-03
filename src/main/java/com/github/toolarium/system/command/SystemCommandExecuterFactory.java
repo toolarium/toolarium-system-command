@@ -6,15 +6,20 @@
 package com.github.toolarium.system.command;
 
 import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
-import com.github.toolarium.system.command.builder.SystemCommandExecuterTypeBuilder;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
-import com.github.toolarium.system.command.dto.SystemCommandGroupList;
+import com.github.toolarium.system.command.builder.impl.SystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.dto.ISystemCommand;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
-import com.github.toolarium.system.command.executer.LinuxSystemCommandExecuterImpl;
-import com.github.toolarium.system.command.executer.UnixSystemCommandExecuterImpl;
-import com.github.toolarium.system.command.executer.WindowsSystemCommandExecuterImpl;
-import com.github.toolarium.system.command.process.temp.TempFolderCleanupService;
+import com.github.toolarium.system.command.executer.impl.LinuxSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.executer.impl.UnixSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.executer.impl.WindowsSystemCommandExecuterImpl;
+import com.github.toolarium.system.command.process.folder.FolderCleanupService;
 import com.github.toolarium.system.command.process.thread.NameableThreadFactory;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,12 +33,24 @@ import org.slf4j.LoggerFactory;
  * @author patrick
  */
 public final class SystemCommandExecuterFactory {
+    /** Get the default initial delay of the folder cleanup service */ 
+    public static final long INITIAL_DELAY  = 0;
+    
+    /** Get the default period of the folder cleanup service */ 
+    public static final long PERIOD = 5;
+    
+    /** Get the default timeunit of the folder cleanup service */ 
+    public static final TimeUnit TIMEUNIT = TimeUnit.SECONDS;
+
+    private static final String TOOLARIUM_SYSTEM_COMMAND_TEMP_SUBFOLDER = "toolarium-system-command";
     private static final Logger LOG = LoggerFactory.getLogger(SystemCommandExecuterFactory.class);
-    private static NameableThreadFactory nameableThreadFactory = new NameableThreadFactory("temp");
-    private ScheduledExecutorService tempFolderCleanupService;
-    private long initialDelay = 0;
-    private long period = 5;
-    private TimeUnit timeUnit = TimeUnit.SECONDS;
+    private static NameableThreadFactory nameableThreadFactory = new NameableThreadFactory("folder");
+    private ScheduledExecutorService folderCleanupService;
+    private volatile boolean folderCleanupServiceIsRunning;
+    private long initialDelay = INITIAL_DELAY;
+    private long period = PERIOD;
+    private TimeUnit timeUnit = TIMEUNIT;
+    private Path basePath;
 
 
     /**
@@ -50,15 +67,17 @@ public final class SystemCommandExecuterFactory {
      * Constructor
      */
     private SystemCommandExecuterFactory() {
-        //startTempFolderCleanupService();
+        folderCleanupServiceIsRunning = Boolean.FALSE;
+        //startFolderCleanupService();
 
+        setScriptFolderBasePath(null);
         Runtime.getRuntime().addShutdownHook(new Thread(SystemCommandExecuterFactory.class.getName() + ": Shutdown hook") {
             /**
              * @see java.lang.Thread#run()
              */
             @Override
             public void run() {
-                stopTempFolderCleanupService();
+                stopFolderCleanupService();
             }
         });
     }
@@ -71,48 +90,6 @@ public final class SystemCommandExecuterFactory {
      */
     public static SystemCommandExecuterFactory getInstance() {
         return HOLDER.INSTANCE;
-    }
-
-    
-    /**
-     * Start the temp folder cleanup service
-     */
-    public void startTempFolderCleanupService() {
-        startTempFolderCleanupService(initialDelay, period, timeUnit);
-    }
-    
-    
-    /**
-     * Start the temp folder cleanup service
-     * 
-     * @param initialDelay the time to delay first execution
-     * @param period the period between successive executions
-     * @param timeUnit the time unit of the initialDelay and period parameters
-     */
-    public void startTempFolderCleanupService(long initialDelay, long period, TimeUnit timeUnit) {
-        if (tempFolderCleanupService != null) {
-            return;
-        }
-      
-        LOG.info("Start temp folder cleanup service...");
-        tempFolderCleanupService = Executors.newScheduledThreadPool(1, nameableThreadFactory);
-        tempFolderCleanupService.scheduleAtFixedRate(new TempFolderCleanupService(), initialDelay, period, timeUnit);
-    }
-           
-
-    /**
-     * Stop the temp folder cleanup service
-     */
-    public void stopTempFolderCleanupService() {
-        try {
-            if (tempFolderCleanupService != null) {
-                LOG.info("Stop temp folder cleanup service...");
-                tempFolderCleanupService.shutdown();
-                tempFolderCleanupService = null;
-            }
-        } catch (Exception e) {
-            // NOP
-        }
     }
 
     
@@ -142,10 +119,28 @@ public final class SystemCommandExecuterFactory {
     /**
      * Create a system command executer
      *
+     * @param systemCommandGroup the system command group
+     * @return the system command executer
+     */
+    public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommandGroup systemCommandGroup) {
+        ISystemCommandGroupList s = new SystemCommandGroupList();
+        s.add(systemCommandGroup);
+        return createSystemCommandExecuter(s);
+    }
+
+    
+    /**
+     * Create a system command executer
+     *
      * @param systemCommandGroupList the system commandm group list
      * @return the system command executer
      */
     public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommandGroupList systemCommandGroupList) {
+        
+        if (systemCommandGroupList.runAsScript() && !folderCleanupServiceIsRunning) {
+            startFolderCleanupService();
+        }
+        
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.startsWith("windows")) {
             
@@ -159,5 +154,97 @@ public final class SystemCommandExecuterFactory {
 
         LOG.debug("Choose " + UnixSystemCommandExecuterImpl.class.getName() + " as executer.");
         return new UnixSystemCommandExecuterImpl(systemCommandGroupList);
+    }
+
+    
+    /**
+     * Start the folder cleanup service
+     */
+    public void startFolderCleanupService() {
+        if (folderCleanupServiceIsRunning) {
+            return;
+        }
+
+        folderCleanupServiceIsRunning = true;
+        LOG.info("Start folder cleanup service...");
+        folderCleanupService = Executors.newScheduledThreadPool(1, nameableThreadFactory);
+        folderCleanupService.scheduleAtFixedRate(new FolderCleanupService(basePath), initialDelay, period, timeUnit);
+    }
+    
+    
+    /**
+     * Start the folder cleanup service
+     * 
+     * @param initialDelay the time to delay first execution
+     * @param period the period between successive executions
+     * @param timeUnit the time unit of the initialDelay and period parameters
+     */
+    public void startFolderCleanupService(long initialDelay, long period, TimeUnit timeUnit) {
+        if (folderCleanupServiceIsRunning) {
+            return;
+        }
+        
+        this.initialDelay = initialDelay;
+        this.period = period;
+        this.timeUnit = timeUnit;
+        startFolderCleanupService();
+    }
+           
+
+    /**
+     * Stop the folder cleanup service
+     */
+    public void stopFolderCleanupService() {
+        try {
+            if (folderCleanupServiceIsRunning) {
+                LOG.info("Stop folder cleanup service...");
+                folderCleanupService.shutdown();
+                folderCleanupService = null;
+                folderCleanupServiceIsRunning = false;
+            }
+        } catch (Exception e) {
+            // NOP
+        }
+    }
+
+    
+    /**
+     * Get the script folder base path
+     *
+     * @return the script folder base path
+     */
+    public Path getScriptFolderBasePath() {
+        return basePath;
+    }
+
+
+    /**
+     * Set the script folder base path
+     *
+     * @param inputBasePath the script folder base path
+     */
+    public void setScriptFolderBasePath(Path inputBasePath) {
+        if (inputBasePath != null && inputBasePath.equals(basePath)) {
+            return;
+        }
+
+        if (inputBasePath != null) {
+            this.basePath = inputBasePath;
+        } else {
+            this.basePath = Path.of(System.getProperty("java.io.tmpdir").trim() + "/" + TOOLARIUM_SYSTEM_COMMAND_TEMP_SUBFOLDER);
+            if (!this.basePath.toFile().exists()) {
+                try {
+                    LOG.warn("Create path [" + this.basePath + "].");
+                    Files.createDirectories(getScriptFolderBasePath());
+                } catch (IOException e) {
+                    LOG.warn("Could not create path [" + this.basePath + "]: " + e.getMessage(), e);
+                }
+            }
+        }
+
+        if (folderCleanupServiceIsRunning) {
+            stopFolderCleanupService();
+            startFolderCleanupService();
+        }
     }
 }

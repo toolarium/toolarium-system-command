@@ -5,7 +5,7 @@
  */
 package com.github.toolarium.system.command.process;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import java.time.Duration;
 import java.time.Instant;
 

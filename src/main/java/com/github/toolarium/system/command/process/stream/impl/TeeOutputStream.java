@@ -3,9 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.stream;
+package com.github.toolarium.system.command.process.stream.impl;
 
-import com.github.toolarium.system.command.process.stream.impl.ProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

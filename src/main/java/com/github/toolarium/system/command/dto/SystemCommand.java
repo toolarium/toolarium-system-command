@@ -6,9 +6,8 @@
 package com.github.toolarium.system.command.dto;
 
 
-import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.process.env.IProcessEnvironment;
-import com.github.toolarium.system.command.process.env.dto.ProcessEnvironment;
+import com.github.toolarium.system.command.dto.env.IProcessEnvironment;
+import com.github.toolarium.system.command.dto.env.ProcessEnvironment;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,7 @@ public class SystemCommand implements ISystemCommand {
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#getProcessEnvironment()
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#getProcessEnvironment()
      */
     @Override
     public IProcessEnvironment getProcessEnvironment() {
@@ -66,7 +65,7 @@ public class SystemCommand implements ISystemCommand {
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#getShell()
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#getShell()
      */
     @Override
     public List<String> getShell() {
@@ -85,7 +84,7 @@ public class SystemCommand implements ISystemCommand {
     
 
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#getCommandList()
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#getCommandList()
      */
     @Override
     public List<String> getCommandList() {
@@ -132,7 +131,7 @@ public class SystemCommand implements ISystemCommand {
     
 
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#getSystemCommandExecutionStatusResult()
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#getSystemCommandExecutionStatusResult()
      */
     @Override
     public SystemCommandExecutionStatusResult getSystemCommandExecutionStatusResult() {
@@ -189,7 +188,7 @@ public class SystemCommand implements ISystemCommand {
 
     
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#toString(boolean)
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#toString(boolean)
      */
     @Override
     public String toString() {
@@ -198,7 +197,7 @@ public class SystemCommand implements ISystemCommand {
 
 
     /**
-     * @see com.github.toolarium.system.command.ISystemCommand#toString(boolean)
+     * @see com.github.toolarium.system.command.dto.ISystemCommand#toString(boolean)
      */
     @Override
     public String toString(boolean forDisplay) {

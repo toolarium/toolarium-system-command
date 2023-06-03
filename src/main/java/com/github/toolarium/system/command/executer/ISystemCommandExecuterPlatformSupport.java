@@ -5,19 +5,18 @@
  */
 package com.github.toolarium.system.command.executer;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
 
 /**
- * Defines the system command executer platform support.
+ * The system command executer platform support.
  *  
  * @author patrick
  */
 public interface ISystemCommandExecuterPlatformSupport {
-    
     
     /**
      * Get the start shell command

@@ -1,38 +1,38 @@
 /*
- * UnixSystemCommandExecuterImpl.java
+ * WindowsSystemCommandExecuterImpl.java
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.executer;
+package com.github.toolarium.system.command.executer.impl;
 
-import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+
+import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
 /**
- * Implements a unix based system command executer
- * <p>to proper use under linux you have to close streams: <code> my.log 2&gt;&amp;1 &lt;/dev/zero &amp;</code></p>
+ * Implements a windows based system command executer
  *
  * @author patrick
  */
-public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
-    
+public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
+
     /**
      * Constructor for WindowsSystemCommandExecuterImpl
      *
      * @param systemCommandGroupList the system command group list
      */
-    public UnixSystemCommandExecuterImpl(ISystemCommandGroupList systemCommandGroupList) {
+    public WindowsSystemCommandExecuterImpl(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
     public List<String> getShellStartCommand(ISystemCommand systemCommand) {
@@ -41,32 +41,38 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
         if (systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank() && !currentUser.equals(systemCommand.getProcessEnvironment().getUser().trim())) {
             cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
         }
-        
+
         if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
-            cmdList.addAll(Arrays.asList("sh", "-c"));           
+            if (systemCommand.getProcessEnvironment() != null 
+                && systemCommand.getProcessEnvironment().getOS() != null
+                && systemCommand.getProcessEnvironment().getOS().equalsIgnoreCase("Windows 95")) {
+                cmdList.addAll(Arrays.asList("command.com", "/C"));
+            } else {
+                cmdList.addAll(Arrays.asList("cmd.exe", "/c"));
+            }
         } else {
             cmdList.addAll(systemCommand.getShell());
         }
-        
+
         return cmdList;
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
     public List<String> getShellEndCommand(ISystemCommand systemCommand) {
-        return null; //Arrays.asList(")");
+        return null;
     }
 
-
+    
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getScriptFileExtension()
      */
     @Override
     public String getScriptFileExtension() {
-        return ".sh";
+        return ".bat";
     }
 
 
@@ -75,7 +81,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getScriptFileHeader() {
-        return "#!/bin/sh";
+        return "@ECHO OFF" + getEndOfLine() + "SETLOCAL ENABLEDELAYEDEXPANSION";
     }
 
 
@@ -93,7 +99,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getScriptFileComment() {
-        return "#";
+        return "::";
     }
 
 
@@ -102,7 +108,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getEnvironmentSetCommand() {
-        return "export" + SystemCommand.SPACE;
+        return "SET" + SystemCommand.SPACE + "\"";
     }
 
 
@@ -111,7 +117,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getEnvironmentUnsetCommand() {
-        return "unset" + SystemCommand.SPACE;
+        return getEnvironmentSetCommand();
     }
 
 
@@ -120,7 +126,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getEnvironmentChangeDirectoryCommand() {
-        return "cd" + SystemCommand.SPACE;
+        return "cd /d" + SystemCommand.SPACE;
     }
 
 
@@ -129,7 +135,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getEnvironmentAssignCommand() {
-        return "=\"";
+        return "=";
     }
 
 
@@ -147,9 +153,9 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public String getEndOfLine() {
-        return "\n";
+        return "\r\n";
     }
-
+    
 
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnSuccessStart()
@@ -168,7 +174,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
         return getEndOfLine() + ")";
     }
 
-
+    
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnErrorStart()
      */
@@ -177,7 +183,7 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
         return " || (";
     }
 
-    
+
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getCommandOnErrorEnd()
      */
@@ -186,12 +192,12 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
         return getCommandOnSuccessEnd();
     }
 
-
+    
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getSudo(java.lang.String)
      */
     @Override
     public List<String> getSudo(String username) {
-        return Arrays.asList("sudo", "-u", "\"" + username + "\""); 
+        return Arrays.asList("runas", "/user", "\"" + username + "\"", "/savecred"); 
     }
 }

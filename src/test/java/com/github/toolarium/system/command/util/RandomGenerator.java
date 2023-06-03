@@ -7,12 +7,14 @@ package com.github.toolarium.system.command.util;
 
 import java.util.Random;
 
+
 /**
  * Random generator
  * 
  * @author patrick
  */
 public final class RandomGenerator {
+    
     /**
      * Constructor for RandomGenerator
      */

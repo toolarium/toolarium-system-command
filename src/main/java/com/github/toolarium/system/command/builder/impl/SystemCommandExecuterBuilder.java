@@ -3,10 +3,10 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder;
+package com.github.toolarium.system.command.builder.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
-import com.github.toolarium.system.command.dto.SystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +34,78 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      */
     public SystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#shell(java.lang.String[])
+     */
+    @Override
+    public SystemCommandExecuterBuilder shell(String... shell) {
+        return (SystemCommandExecuterBuilder)super.shell(shell);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#user(java.lang.String)
+     */
+    @Override
+    public SystemCommandExecuterBuilder user(String user) {
+        return (SystemCommandExecuterBuilder)super.user(user);
+    }
+    
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#workingPath(java.lang.String)
+     */
+    @Override
+    public SystemCommandExecuterBuilder workingPath(String workingPath) {
+        return (SystemCommandExecuterBuilder)super.workingPath(workingPath);
+    }
+
+    
+    /**
+     * Set the os
+     *
+     * @param os the os
+     * @return the system command executer builder
+    @Override
+    public SystemCommandExecuterBuilder os(String os) {
+        return (SystemCommandExecuterBuilder)super.os(os);
+    }
+     */
+
+    
+    /**
+     * Set the os version
+     *
+     * @param os the os version
+     * @return the system command executer builder
+    @Override
+    public SystemCommandExecuterBuilder osVersion(String osVersion) {
+        return (SystemCommandExecuterBuilder)super.osVersion(osVersion);
+    }
+    */
+
+    
+    /**
+     * Set the architecture
+     *
+     * @param architecture the architecture
+     * @return the system command executer builder
+    @Override
+    public SystemCommandExecuterBuilder architecture(String architecture) {
+        return (SystemCommandExecuterBuilder)super.architecture(architecture);
+    }
+    */
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#environmentVariable(java.lang.String, java.lang.String)
+     */
+    @Override
+    public SystemCommandExecuterBuilder environmentVariable(String key, String value) {
+        return (SystemCommandExecuterBuilder)super.environmentVariable(key, value);
     }
 
     
@@ -94,7 +166,7 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      */
     @Override
     protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {

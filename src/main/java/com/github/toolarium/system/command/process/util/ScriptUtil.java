@@ -5,17 +5,15 @@
  */
 package com.github.toolarium.system.command.process.util;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroup;
+import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -25,14 +23,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class ScriptUtil {
     
-    /** Defines the temp sub folder */
-    public static final String TOOLARIUM_SYSTEM_COMMAND_TEMP_SUBFOLDER = "toolarium-system-command";
-
     /** TEMP Environment variable */
     public static final String TEMPs = "TOOLARIUM_TEMP";
     
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptUtil.class);
-    private Path baseTempPath;
 
     /**
      * Private class, the only instance of the singelton which will be created by accessing the holder class.
@@ -63,35 +56,13 @@ public final class ScriptUtil {
 
     
     /**
-     * Get the base temp path
-     *
-     * @return the base temp path
-     */
-    public Path getBaseTempPath() {
-        if (baseTempPath == null) {
-            baseTempPath = Path.of(System.getProperty("java.io.tmpdir").trim() + "/" + TOOLARIUM_SYSTEM_COMMAND_TEMP_SUBFOLDER);
-            if (!baseTempPath.toFile().exists()) {
-                try {
-                    LOG.warn("Create temp path [" + baseTempPath + "].");
-                    Files.createDirectories(getBaseTempPath());
-                } catch (IOException e) {
-                    LOG.warn("Could not create temp path [" + baseTempPath + "]: " + e.getMessage(), e);
-                }
-            }
-        }
-        
-        return baseTempPath;
-    }
-
-    
-    /**
      * Prepare the temp path and the script file
      * 
      * @param systemCommandGroup the system command group
      * @return the temp path
      */
     public Path prepareTempPath(ISystemCommandGroup systemCommandGroup) {
-        return  Paths.get(ScriptUtil.getInstance().getBaseTempPath() + "/" + systemCommandGroup.getId());
+        return  Paths.get(SystemCommandExecuterFactory.getInstance().getScriptFolderBasePath() + "/" + systemCommandGroup.getId());
     }
 
     

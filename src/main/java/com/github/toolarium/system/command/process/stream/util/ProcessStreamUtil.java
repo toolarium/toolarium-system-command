@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Stream util class
+ * The process stream util class
  *
  * @author patrick
  */

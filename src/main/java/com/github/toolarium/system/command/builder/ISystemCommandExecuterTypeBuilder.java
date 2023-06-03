@@ -5,14 +5,16 @@
  */
 package com.github.toolarium.system.command.builder;
 
+import com.github.toolarium.system.command.builder.impl.DockerSystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.impl.JavaSystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.impl.SystemCommandExecuterBuilder;
 
 /**
- * Defines the system command executer type builder
+ * The system command executer type builder
  * 
  * @author patrick
  */
 public interface ISystemCommandExecuterTypeBuilder {
-
     
     /**
      * Get a system command executer builder

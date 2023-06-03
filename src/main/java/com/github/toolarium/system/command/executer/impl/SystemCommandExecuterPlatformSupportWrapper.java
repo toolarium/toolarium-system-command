@@ -3,9 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.util.dto;
+package com.github.toolarium.system.command.executer.impl;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import java.io.IOException;
 import java.io.Serializable;
@@ -53,7 +53,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
     public List<String> getShellStartCommand(ISystemCommand systemCommand) {
@@ -62,7 +62,7 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
     public List<String> getShellEndCommand(ISystemCommand systemCommand) {

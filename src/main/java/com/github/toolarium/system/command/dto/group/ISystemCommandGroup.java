@@ -3,13 +3,15 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.dto;
+package com.github.toolarium.system.command.dto.group;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
 import java.util.Iterator;
 
+
 /**
- * Defines a system command group. This will be executed as a script.
+ * The system command group. In case of multiple {@link ISystemCommand}s it will be grouped.
+ * In case a group contains multiple {@link ISystemCommand} it will be executed as a script. 
  * 
  * @author patrick
  */
@@ -48,16 +50,17 @@ public interface ISystemCommandGroup {
     
     
     /**
-     * Define if this system command group should run inside a script.
-     * By default it depends if there are more than one system command.
+     * Check if this system command group contains parts which runs as a script.
+     * By default it depends if there are more than one system commands to execute.
+     * This can be forced.
      *
-     * @return true to run as script
+     * @return true if it runs as script
      */
     boolean runAsScript();
-    
+
     
     /**
-     * Force to run as script
+     * Force to run as script.
      */
     void forceRunAsScript();
 

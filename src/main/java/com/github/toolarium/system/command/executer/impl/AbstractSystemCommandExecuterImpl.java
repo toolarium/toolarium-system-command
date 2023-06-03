@@ -3,15 +3,17 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.executer;
+package com.github.toolarium.system.command.executer.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroup;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
+import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.dto.AsynchronousProcess;
-import com.github.toolarium.system.command.process.dto.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.dto.SynchronousProcess;
+import com.github.toolarium.system.command.process.impl.AsynchronousProcess;
+import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.impl.SynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.liveness.impl.ProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
@@ -85,7 +87,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, int)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, int)
      */
     @Override
     public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait) {
@@ -94,7 +96,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, int, long)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, int, long)
      */
     @Override
     public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait, long pollTimeout) {
@@ -155,7 +157,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
      */
     @Override
@@ -165,7 +167,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.dto.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream, long)
      */
     @Override

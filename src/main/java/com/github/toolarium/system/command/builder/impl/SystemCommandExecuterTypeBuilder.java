@@ -3,9 +3,11 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder;
+package com.github.toolarium.system.command.builder.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 
 
 /**

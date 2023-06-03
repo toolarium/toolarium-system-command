@@ -3,9 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.dto;
+package com.github.toolarium.system.command.dto.group;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
     
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#getId()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#getId()
      */
     @Override
     public String getId() {
@@ -56,7 +56,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#iterator()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#iterator()
      */
     @Override
     public Iterator<ISystemCommand> iterator() {
@@ -65,7 +65,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#size()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#size()
      */
     @Override
     public int size() {
@@ -74,7 +74,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#runAsScript()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#runAsScript()
      */
     @Override
     public boolean runAsScript() {
@@ -87,7 +87,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#forceRunAsScript()
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#forceRunAsScript()
      */
     @Override
     public void forceRunAsScript() {
@@ -136,7 +136,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.ISystemCommandGroup#toString(boolean)
+     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#toString(boolean)
      */
     @Override
     public String toString(boolean forDisplay) {

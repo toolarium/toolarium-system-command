@@ -3,15 +3,17 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder;
+package com.github.toolarium.system.command.builder.impl;
 
-import com.github.toolarium.system.command.ISystemCommand.SystemCommandExecutionStatusResult;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.dto.ISystemCommand.SystemCommandExecutionStatusResult;
 import com.github.toolarium.system.command.dto.SystemCommand;
-import com.github.toolarium.system.command.dto.SystemCommandGroup;
+import com.github.toolarium.system.command.dto.env.ProcessEnvironment;
+import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
-import com.github.toolarium.system.command.process.env.dto.ProcessEnvironment;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,7 +23,7 @@ import java.util.Set;
 
 
 /**
- * Defines the abstract command executer builder
+ * The abstract command executer builder
  * 
  * @author patrick
  */

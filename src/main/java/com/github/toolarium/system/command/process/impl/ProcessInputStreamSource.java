@@ -3,11 +3,13 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.dto;
+package com.github.toolarium.system.command.process.impl;
 
 import java.io.File;
 
+
 /**
+ * The process input stream source.
  * 
  * @author patrick
  */

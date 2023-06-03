@@ -3,12 +3,12 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.env;
+package com.github.toolarium.system.command.dto.env;
 
 import java.util.Map;
 
 /**
- * Defines the process environment
+ * The process environment. It contains all environment information.
  * 
  * @author patrick
  */

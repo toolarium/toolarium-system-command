@@ -3,9 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.executer;
+package com.github.toolarium.system.command.executer.impl;
 
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 
 
 /**

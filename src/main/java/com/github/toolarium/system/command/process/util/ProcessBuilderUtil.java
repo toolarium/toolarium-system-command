@@ -5,12 +5,12 @@
  */
 package com.github.toolarium.system.command.process.util;
 
-import com.github.toolarium.system.command.ISystemCommand;
-import com.github.toolarium.system.command.dto.ISystemCommandGroup;
-import com.github.toolarium.system.command.dto.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.ISystemCommand;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
+import com.github.toolarium.system.command.executer.impl.SystemCommandExecuterPlatformSupportWrapper;
 import com.github.toolarium.system.command.process.IProcess;
-import com.github.toolarium.system.command.process.util.dto.SystemCommandExecuterPlatformSupportWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

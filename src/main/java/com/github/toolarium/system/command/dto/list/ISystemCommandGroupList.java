@@ -3,15 +3,17 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.dto;
+package com.github.toolarium.system.command.dto.list;
 
-import com.github.toolarium.system.command.ISystemCommand;
+import com.github.toolarium.system.command.dto.ISystemCommand;
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import java.util.Iterator;
 import java.util.List;
 
 
 /**
- * Defines a system command group list
+ * The system command group list is used to handle the case to group individual {@link ISystemCommandGroup}s. 
+ * To offer the possibility to pipe {@link ISystemCommandGroup}  this abstraction is needed.
  * 
  * @author patrick
  */
@@ -50,9 +52,19 @@ public interface ISystemCommandGroupList {
     
     
     /**
-     * Force to run current system command group as script
+     * Check if this system command group list contains parts which runs as a script.
+     * By default it depends if there are more than one system commands to execute.
+     * This can be forced.
+     *
+     * @return true if it runs as script
      */
-    void forceSystenCommandGroupRunAsScript();
+    boolean runAsScript();
+
+    
+    /**
+     * Force to run as script.
+     */
+    void forceRunAsScript();
 
     
     /**
