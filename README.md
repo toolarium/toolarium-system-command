@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/github/license/toolarium/toolarium-system-command)](https://github.com/toolarium/toolarium-system-command/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-system-command/0.1.0)](https://search.maven.org/artifact/com.github.toolarium/toolarium-system-command/0.1.0/jar)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-system-command/0.7.0)](https://search.maven.org/artifact/com.github.toolarium/toolarium-system-command/0.7.0/jar)
 [![javadoc](https://javadoc.io/badge2/com.github.toolarium/toolarium-system-command/javadoc.svg)](https://javadoc.io/doc/com.github.toolarium/toolarium-system-command)
 
 # toolarium-jwebserver
@@ -20,7 +20,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ```groovy
 dependencies {
-    implementation "com.github.toolarium:toolarium-system-command:0.1.0"
+    implementation "com.github.toolarium:toolarium-system-command:0.7.0"
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 <dependency>
     <groupId>com.github.toolarium</groupId>
     <artifactId>toolarium-system-command</artifactId>
-    <version>0.1.0</version>
+    <version>0.7.0</version>
 </dependency>
 ```
 
