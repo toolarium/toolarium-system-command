@@ -60,7 +60,7 @@ public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterT
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder#docker(java.lang.String)
      */
     @Override
-    public DockerSystemCommandExecuterBuilder docker(String image) {
-        return new DockerSystemCommandExecuterBuilder(systemCommandGroupList).image(image);
+    public DockerSystemCommandExecuterBuilder docker() {
+        return new DockerSystemCommandExecuterBuilder(systemCommandGroupList);
     }
 }

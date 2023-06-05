@@ -6,6 +6,8 @@
 package com.github.toolarium.system.command.builder.impl;
 
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -14,7 +16,17 @@ import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
  * @author patrick
  */
 public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterBuilder {
+    private String dockerExecutable;
+    private String dockerCommand;
+    private Boolean interactive;
+    private Boolean remove;
+    private Boolean nameTag;
+    private String name;
+    private Integer port;
+    private String image;
+    private Map<String, String> parameters;
 
+    
     /**
      * Constructor for DockerSystemCommandExecuterBuilder
      *
@@ -22,6 +34,15 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
      */
     public DockerSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
+        dockerExecutable = "docker";
+        dockerCommand = null;
+        interactive = null;
+        remove = null;
+        nameTag = null;
+        name = null;
+        port = null;
+        image = null;
+        parameters = new LinkedHashMap<>();
     }
     
     
@@ -98,9 +119,194 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
+     * Set the docker image
+     *
+     * @param dockerExecutable the docker image
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder dockerExecutable(String dockerExecutable) {
+        if (dockerExecutable != null) {
+            this.dockerExecutable = dockerExecutable.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Set the docker command
+     *
+     * @param dockerCommand the docker command
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder dockerCommand(String dockerCommand) {
+        if (dockerCommand != null) {
+            this.dockerCommand = dockerCommand.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Interactive 
+     * 
+     * @param interactive true for interactive
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder interactive(boolean interactive) {
+        this.interactive = interactive;
+        return this;
+    }
+    
+   
+    /**
+     * Automatically remove the container when it exits
+     *
+     * @param remove true to automatically remove the container when it exits
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder remove(boolean remove) {
+        this.remove = remove;
+        return this;
+    }
+
+    
+    /**
+     * Set the docker name
+     *
+     * @param name the docker name
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder name(String name) {
+        if (name != null) {
+            this.nameTag = Boolean.TRUE;
+            this.name = name.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Set the docker port
+     *
+     * @param port the docker port
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder port(Integer port) {
+        if (port != null) {
+            this.port = port;
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Run a docker container
+     *
+     * @param image the image
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder run(String image) {
+        if (image != null) {
+            this.dockerCommand = "run";
+            this.image = image.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Stop a docker container
+     *
+     * @param name the conatiner name to stop
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder stop(String name) {
+        this.dockerCommand = "stop";
+        this.name = name;
+        this.nameTag = Boolean.FALSE;
+        return this;
+    }
+
+    
+    /**
+     * Get docker images
+     *
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder images() {
+        this.dockerCommand = "images";
+        this.name = null;
+        return this;
+    }
+
+    
+    /**
+     * Get docker images
+     *
+     * @param name the conatiner name to filter
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder images(String name) {
+        this.dockerCommand = "images";
+        this.name = name;
+        this.nameTag = Boolean.FALSE;
+        return this;
+    }
+
+    
+    /**
+     * Add a program parameter
+     *
+     * @param parameter program parameter to add
+     * @return the docker system command executer builder
+     */
+    public DockerSystemCommandExecuterBuilder parameter(String parameter) {
+        this.parameters.put(parameter, "");
+        return this;
+    }
+
+    
+    /**
      * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
     protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
+        command(dockerExecutable, dockerExecutable);
+        command(dockerCommand, dockerCommand);
+
+        if (interactive != null && interactive) {
+            command("-it");
+        }
+
+        if (remove != null && remove) {
+            command("--rm");
+        }
+
+        if (name != null && !name.isBlank()) {
+            if (nameTag != null && nameTag) {
+                command("--name");
+            }
+            
+            command(name);
+        }
+
+        if (port != null) {
+            command("-p");
+            command(port + ":" + port);
+        }
+
+        if (image != null && !image.isBlank()) {
+            command(image);
+        }
+
+        if (parameters != null && !parameters.isEmpty()) {
+            command(parameters, null, false, false);
+        }
     }
 }

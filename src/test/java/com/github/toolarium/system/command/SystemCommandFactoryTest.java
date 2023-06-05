@@ -184,6 +184,100 @@ public class SystemCommandFactoryTest extends AbstractProcessTest {
 
     
     /**
+     * Shows the usage of the start and stop of a docker container
+     * 
+     * @throws InterruptedException in case of a thread interruption
+     */
+    @Test
+    public void usageDockerStartStop() throws InterruptedException {
+        // docker run --rm --name icap-server -p 1344:1344 toolarium/toolarium-icap-calmav-docker:0.0.1
+        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        final IAsynchronousProcess startDockerProcess = SystemCommandExecuterFactory.builder().docker()
+                .run("toolarium/toolarium-icap-calmav-docker:0.0.1")
+                .remove(true)
+                .name("icap-server")
+                .port(1344)
+            .build()
+            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+
+        Thread.sleep(2 * 1000);
+        
+        // stop: docker stop icap-server
+        final ISynchronousProcess stopDockerProcess = SystemCommandExecuterFactory.builder().docker()
+                .stop("icap-server")
+                .build()
+                .runSynchronous();
+        assertNotNull(stopDockerProcess);
+        assertEquals("icap-server" + NL, stopDockerProcess.getOutput());
+        assertEquals("", stopDockerProcess.getErrorOutput());
+        //assertEquals(0, startDockerProcess.getExitValue());
+        
+        startDockerProcess.waitFor();
+        assertNotNull(startDockerProcess);
+        assertNotNull(startDockerProcess.getExitValue());
+        assertEquals("INFO: Starting up C-ICAP service." + NL, ProcessStreamUtil.getInstance().removeCR(output.toString()));
+        //assertEquals("" + NL, ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
+        //assertEquals(0, startDockerProcess.getExitValue());
+    }
+
+    
+    /**
+     * Shows the usage
+     * 
+     * @throws InterruptedException in case of a thread interruption
+     */
+    //@Test
+    public void usageDocker() throws InterruptedException {
+        //final String param1 = "-param1";
+        //docker run -it --rm alpine /bin/ash
+        // docker run --rm --name icap-server -p 1344:1344 toolarium/toolarium-icap-calmav-docker:0.0.1
+        ProcessInputStreamSource inputBuffer = ProcessInputStreamSource.BUFFER;
+        inputBuffer.setBuffer("exit");
+        
+        ProcessBufferOutputStream output = null; //new ProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = null; // new ProcessBufferOutputStream();
+        IAsynchronousProcess startDockerProcess = SystemCommandExecuterFactory.builder().docker()
+                .run("alpine")
+                .interactive(true)
+                .remove(true)
+                .parameter("/bin/ash")
+            .build()
+            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+        
+        Thread.sleep(10 * 1000);
+        startDockerProcess.waitFor();
+        assertNotNull(startDockerProcess);
+        assertNotNull(startDockerProcess.getExitValue());
+        assertEquals(0, startDockerProcess.getExitValue());
+        //assertEquals("", ProcessStreamUtil.getInstance().removeCR(output.toString()));
+        //assertEquals(TestMain.STD_ERR_TEST + NL, ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
+        //assertNotNull(myAsyncProcess.getTotalCpuDuration());
+    }
+
+    
+
+    
+    /**
+     * Shows the usage of the start and stop of a docker container
+     * 
+     * @throws InterruptedException in case of a thread interruption
+     */
+    //@Test
+    public void usageDockerImages() throws InterruptedException {
+        final ISynchronousProcess stopDockerProcess = SystemCommandExecuterFactory.builder().docker()
+                .images()
+                .build()
+                .runSynchronous();
+        assertNotNull(stopDockerProcess);
+        assertEquals("icap-server" + NL, stopDockerProcess.getOutput());
+        assertEquals("", stopDockerProcess.getErrorOutput());
+        //assertEquals(0, startDockerProcess.getExitValue());
+        
+    }
+
+    
+    /**
      * Shows the usage
      * 
      * @throws InterruptedException in case of a thread interruption

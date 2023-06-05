@@ -83,7 +83,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             outputStream = pipeAvailableBytes(outputStream);
             errorStream = pipeAvailableBytes(errorStream);
 
-            isAlive = (process != null && process.isAlive()) || ((outputStream != null) || (errorStream != null));
+            isAlive = (process != null && process.isAlive()) || (outputStream != null) || (errorStream != null);
 
             if (isAlive) {
                 try {

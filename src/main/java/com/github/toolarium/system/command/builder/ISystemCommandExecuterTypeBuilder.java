@@ -47,8 +47,7 @@ public interface ISystemCommandExecuterTypeBuilder {
     /**
      * Get a docker system command executer builder
      *
-     * @param image the docker image
      * @return the docker system command executer builder
      */
-    DockerSystemCommandExecuterBuilder docker(String image);
+    DockerSystemCommandExecuterBuilder docker();
 }
