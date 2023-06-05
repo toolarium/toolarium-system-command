@@ -7,8 +7,8 @@ package com.github.toolarium.system.command.executer;
 
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
 
 
 /**
@@ -63,6 +63,16 @@ public interface ISystemCommandExecuter {
      * @return the asynchronous process which is already started
      */
     IAsynchronousProcess runAsynchronous();
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
+     * @param processOut the process output stream
+     * @param processErr the process error stream
+     * @return the asynchronous process which is already started
+     */
+    IAsynchronousProcess runAsynchronous(IProcessOutputStream processOut, IProcessOutputStream processErr);
 
     
     /**

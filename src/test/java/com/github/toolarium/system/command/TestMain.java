@@ -104,7 +104,7 @@ public final class TestMain {
             }
         }
         
-        print(STD_TEST + System.getenv().get(ENV_KEY) + "/" + System.getProperty(SYSTEM_PROPERTY_KEY), false);
+        print(STD_TEST + System.getenv().get(ENV_KEY) + "/" + System.getProperty(SYSTEM_PROPERTY_KEY) + " - [" + System.getProperty("user.name") + "]: " + System.getProperty("user.dir"), false);
         print(STD_ERR_TEST, true);
     }
 

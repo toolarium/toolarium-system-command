@@ -12,11 +12,11 @@ import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatfo
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
 import com.github.toolarium.system.command.process.impl.AsynchronousProcess;
-import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.impl.SynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.liveness.impl.ProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.impl.ProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
@@ -87,7 +87,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, int)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, int)
      */
     @Override
     public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait) {
@@ -96,7 +96,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, int, long)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, int, long)
      */
     @Override
     public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait, long pollTimeout) {
@@ -157,7 +157,16 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
+     */
+    @Override
+    public IAsynchronousProcess runAsynchronous(IProcessOutputStream processOut, IProcessOutputStream processErr) {
+        return runAsynchronous(null, processOut, processErr, DEFAULT_POLL_TIMEOUT);
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
      */
     @Override
@@ -167,7 +176,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.impl.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream, long)
      */
     @Override

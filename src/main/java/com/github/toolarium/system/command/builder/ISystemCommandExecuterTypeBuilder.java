@@ -5,10 +5,10 @@
  */
 package com.github.toolarium.system.command.builder;
 
-import com.github.toolarium.system.command.builder.impl.DockerSystemCommandExecuterBuilder;
-import com.github.toolarium.system.command.builder.impl.JarSystemCommandExecuterBuilder;
-import com.github.toolarium.system.command.builder.impl.JavaSystemCommandExecuterBuilder;
-import com.github.toolarium.system.command.builder.impl.SystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.docker.DockerSystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.java.JarSystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.java.JavaSystemCommandExecuterBuilder;
+import com.github.toolarium.system.command.builder.system.SystemCommandExecuterBuilder;
 
 
 /**

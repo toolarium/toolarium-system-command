@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder.impl;
+package com.github.toolarium.system.command.builder.system;
 
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
@@ -116,7 +116,7 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder command(String command) {
-        getSystemCommand().add(command, command);
+        super.command(command);
         return this;
     }
 
@@ -129,7 +129,7 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder command(String command, String displayCommand) {
-        getSystemCommand().add(command, displayCommand);
+        super.command(command, displayCommand);
         return this;
     }
 
@@ -144,7 +144,7 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder command(final Map<String, String> keyValueSettings, final String keyPrefix, final boolean encapsulateValue, final boolean encapsulateExpression) {
-        command(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, null);
+        super.command(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression);
         return this;
     }
 
@@ -160,13 +160,13 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * @return the system command executer builder
      */
     public SystemCommandExecuterBuilder command(final Map<String, String> keyValueSettings, final String keyPrefix, final boolean encapsulateValue, final boolean encapsulateExpression, final Set<String> senstivieSettings) {
-        getSystemCommand().add(toString(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, null), toString(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, senstivieSettings));
+        super.command(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, senstivieSettings);
         return this;
     }
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      */
     @Override
     protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {

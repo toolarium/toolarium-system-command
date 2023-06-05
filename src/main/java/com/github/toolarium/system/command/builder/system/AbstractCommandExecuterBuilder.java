@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder.impl;
+package com.github.toolarium.system.command.builder.system;
 
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder;
@@ -14,6 +14,7 @@ import com.github.toolarium.system.command.dto.env.ProcessEnvironment;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
+import com.github.toolarium.system.command.util.SystemCommandFactory;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -208,7 +209,7 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      * @return the system command executer builder
      */
     protected ISystemCommandExecuterBuilder command(final Map<String, String> keyValueSettings, final String keyPrefix, final boolean encapsulateValue, final boolean encapsulateExpression, final Set<String> senstivieSettings) {
-        command(toString(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, null), toString(keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, senstivieSettings));
+        SystemCommandFactory.getInstance().addSystemCommandParameters(getSystemCommand(), keyValueSettings, keyPrefix, encapsulateValue, encapsulateExpression, senstivieSettings);
         return this;
     }
 
@@ -317,61 +318,5 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
         systemCommandGroupList.add(newSystemCommand);
         
         return new SystemCommandExecuterTypeBuilder(systemCommandGroupList);
-    }
-
-    
-    /**
-     * Convert a list to a string
-     *
-     * @param map the map
-     * @param keyPrefix the key prefix or null
-     * @param encapsulateValue true to encapsulate values
-     * @param encapsulateExpression true to encapsulate the full expression
-     * @param senstivieSettings the sensitive settings
-     * @return the string
-     */
-    protected String toString(final Map<String, String> map, final String keyPrefix, final boolean encapsulateValue, final boolean encapsulateExpression, final Set<String> senstivieSettings) {
-        StringBuilder builder = new StringBuilder();
-        
-        int i = 0;
-        for (Map.Entry<String, String> e : map.entrySet()) {
-            if (i > 0) {
-                builder.append(SystemCommand.SPACE);
-            }
-
-            if (encapsulateExpression) {
-                builder.append("\"");
-            }
-            
-            if (keyPrefix != null && !keyPrefix.isBlank()) {
-                builder.append(keyPrefix);
-            }
-            
-            builder.append(e.getKey());
-            
-            if (e.getValue() != null && !e.getValue().isBlank()) {
-                builder.append("=");
-                
-                if (senstivieSettings != null && senstivieSettings.contains(e.getKey())) {
-                    builder.append("...");
-                } else {
-                    if (encapsulateValue) {
-                        builder.append("\"");
-                    }
-                    builder.append(e.getValue());
-                    if (encapsulateValue) {
-                        builder.append("\"");
-                    }
-                }
-            }
-            
-            if (encapsulateExpression) {
-                builder.append("\"");
-            }
-            
-            i++;
-        }
-
-        return builder.toString();
     }
 }

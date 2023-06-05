@@ -6,7 +6,7 @@
 package com.github.toolarium.system.command;
 
 import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
-import com.github.toolarium.system.command.builder.impl.SystemCommandExecuterTypeBuilder;
+import com.github.toolarium.system.command.builder.system.SystemCommandExecuterTypeBuilder;
 import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;

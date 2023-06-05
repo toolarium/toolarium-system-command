@@ -3,8 +3,9 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder.impl;
+package com.github.toolarium.system.command.builder.docker;
 
+import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -272,7 +273,7 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
@@ -307,6 +308,11 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
         if (parameters != null && !parameters.isEmpty()) {
             command(parameters, null, false, false);
+        }
+        
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        if (!isWindows) {
+            systemCommandGroupList.forceRunAsScript();
         }
     }
 }

@@ -3,12 +3,14 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder.impl;
+package com.github.toolarium.system.command.builder.java;
 
-import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,15 +20,14 @@ import java.util.Set;
  * @author patrick
  */
 public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCommandExecuterBuilder {
-    private String jdkPath;
-    private String javaMemorySettings;
-    private String classPath;
+    private String jrePath;
     private String javaExecutable;
+    private String classPath;
     private String javaAgent;
+    private List<String> javaMemorySettings;
     private Map<String, String> systemProperties;
     private Set<String> senstivieSettings;
     private Map<String, String> parameters;
-    //private Map<String, String> 
     
     
     /**
@@ -36,8 +37,8 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
      */
     public AbstractJavaSystemCommandExecuteBuilder(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
-        this.jdkPath = null;
-        this.javaMemorySettings = null;
+        this.jrePath = null;
+        this.javaMemorySettings = new ArrayList<>();
         this.javaAgent = null;
         javaExecutable = "java";
         systemProperties = new LinkedHashMap<>();
@@ -119,14 +120,95 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
 
     
     /**
-     * Set the jdk path
+     * Set the jre path
      *
-     * @param jdkPath the jdk path
+     * @param jrePath the jre path
      * @return the java system command executer builder
      */
-    public AbstractJavaSystemCommandExecuteBuilder jdkPath(String jdkPath) {
-        if (jdkPath != null) {
-            this.jdkPath = jdkPath.trim();
+    public AbstractJavaSystemCommandExecuteBuilder jrePath(String jrePath) {
+        if (jrePath != null) {
+            this.jrePath = jrePath.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Inherit jre path
+     *
+     * @return the java system command executer builder
+     */
+    public AbstractJavaSystemCommandExecuteBuilder inheritJre() {
+        this.jrePath = System.getProperty("java.home").replace("\\", "/");
+        return this;
+    }
+
+    
+
+    
+    /**
+     * Set the java executable to set
+     *
+     * @param javaExecutable the java executable to set
+     * @return the java system command executer builder
+     */
+    public AbstractJavaSystemCommandExecuteBuilder javaExecutable(String javaExecutable) {
+        if (javaExecutable != null) {
+            this.javaExecutable = javaExecutable.trim();
+        }
+        
+        return this;
+    }
+    
+    
+    /**
+     * Inherit class path
+     *
+     * @return the java system command executer builder
+     */
+    public AbstractJavaSystemCommandExecuteBuilder inheritClassPath() {
+        return classPath(System.getProperty("java.class.path"));
+    }
+    
+
+    
+    /**
+     * Set the java executable to set
+     *
+     * @param classPath the java classpath to add
+     * @return the java system command executer builder
+     */
+    public AbstractJavaSystemCommandExecuteBuilder classPath(String classPath) {
+        if (classPath == null || classPath.isBlank()) {
+            return this;
+        }
+        
+        if (this.classPath == null) {
+            this.classPath = classPath.trim();
+        } else {
+            boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+            String classPathSeparator = ":";
+            if (isWindows) {
+                classPathSeparator = ";";
+            }
+            
+            this.classPath = this.classPath + classPathSeparator + classPath.trim();
+        }
+        
+        return this;
+    }
+
+    
+    /**
+     * Set the java agent to set
+     *
+     * @param javaAgent the java agent to set
+     * @return the java system command executer builder
+     */
+    public AbstractJavaSystemCommandExecuteBuilder javaAgent(String javaAgent) {
+        if (javaAgent != null) {
+            this.javaAgent = javaAgent.trim();
         }
         
         return this;
@@ -145,50 +227,12 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
      * @return the java system command executer builder
      */
     public AbstractJavaSystemCommandExecuteBuilder javaMemory(String initialSize, String maxSize) {
-        this.javaMemorySettings = "";
-
         if (initialSize != null && !initialSize.isBlank()) {
-            if (!javaMemorySettings.isBlank()) {
-                javaMemorySettings += SystemCommand.SPACE;
-            }
-            this.javaMemorySettings += "-Xms" + initialSize.trim();
+            this.javaMemorySettings.add("-Xms" + initialSize.trim());
         }
 
         if (maxSize != null && !maxSize.isBlank()) {
-            if (!javaMemorySettings.isBlank()) {
-                javaMemorySettings += SystemCommand.SPACE;
-            }
-            this.javaMemorySettings += "-Xmx" + maxSize.trim();
-        }
-        
-        return this;
-    }
-
-    
-    /**
-     * Set the java executable to set
-     *
-     * @param javaExecutable the java executable to set
-     * @return the java system command executer builder
-     */
-    public AbstractJavaSystemCommandExecuteBuilder javaExecutable(String javaExecutable) {
-        if (javaExecutable != null) {
-            this.javaExecutable = javaExecutable.trim();
-        }
-        
-        return this;
-    }
-
-    
-    /**
-     * Set the java agent to set
-     *
-     * @param javaAgent the java agent to set
-     * @return the java system command executer builder
-     */
-    public AbstractJavaSystemCommandExecuteBuilder javaAgent(String javaAgent) {
-        if (javaAgent != null) {
-            this.javaAgent = javaAgent.trim();
+            this.javaMemorySettings.add("-Xmx" + maxSize.trim());
         }
         
         return this;
@@ -276,40 +320,46 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
 
 
     /**
-     * @see com.github.toolarium.system.command.builder.impl.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
     protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
-        if (jdkPath != null && !jdkPath.isBlank()) {
-            command(jdkPath);
+        if (jrePath != null && !jrePath.isBlank()) {
+            command(jrePath.trim() + "/bin/" + javaExecutable);        
+        } else {
+            command(javaExecutable);
         }
-        
-        command(javaExecutable);
         finalizeJavaExecutable();
         
         if (classPath != null && !classPath.isBlank()) {
-            command("-cp" + SystemCommand.SPACE + classPath);
+            command("-cp");
+            command(classPath);
         }
         
         if (javaAgent != null) {
-            command("-javaagent" + SystemCommand.SPACE + javaAgent);
+            command("-javaagent");
+            command(javaAgent);
         }
         
-        if (javaMemorySettings != null && !javaMemorySettings.isBlank()) {
-            command(javaMemorySettings);
+        if (javaMemorySettings != null && !javaMemorySettings.isEmpty()) {
+            for (String s : javaMemorySettings) {
+                command(s);
+            }
         }
 
         if (systemProperties != null && !systemProperties.isEmpty()) {
             boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-            boolean encapsulateExpression;
+            boolean encapsulateExpression = false;
+            boolean encapsulateValue = false;
+            
             if (isWindows) {
                 encapsulateExpression = true;
             } else {
-                encapsulateExpression = false;
+                encapsulateValue = true;
                 systemCommandGroupList.forceRunAsScript();
             }
-            command(systemProperties, "-D", !encapsulateExpression, encapsulateExpression, senstivieSettings);
+            command(systemProperties, "-D", encapsulateValue, encapsulateExpression, senstivieSettings);
         }
 
         command(javaMain());

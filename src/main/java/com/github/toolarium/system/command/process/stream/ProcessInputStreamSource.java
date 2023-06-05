@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.impl;
+package com.github.toolarium.system.command.process.stream;
 
 import java.io.File;
 
@@ -14,10 +14,10 @@ import java.io.File;
  * @author patrick
  */
 public enum ProcessInputStreamSource {
-    /** default   */
+    /** default, taken from parent process */
     INHERIT(null, null),
     
-    /** no input  */
+    /** no input */
     DISCARD(null, ""),   
     
     /** pipe input */

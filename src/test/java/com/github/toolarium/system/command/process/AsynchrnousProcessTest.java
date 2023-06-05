@@ -3,14 +3,15 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.process;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.github.toolarium.system.command.AbstractProcessTest;
+import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.dto.SystemCommand;
-import com.github.toolarium.system.command.process.IAsynchronousProcess;
-import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.File;

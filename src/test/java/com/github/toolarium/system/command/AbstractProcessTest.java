@@ -15,6 +15,8 @@ import com.github.toolarium.system.command.dto.ISystemCommand.SystemCommandExecu
 import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IProcess;
+import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.time.Instant;
@@ -37,6 +39,11 @@ import org.slf4j.LoggerFactory;
  * @author patrick
  */
 public class AbstractProcessTest {
+    /** new line */
+    protected static final String NL = "\n";
+    /** true */
+    protected static final String TRUE = "true";
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractProcessTest.class);
     
     
@@ -189,5 +196,48 @@ public class AbstractProcessTest {
         // assertTrue(process.getTotalCpuDuration().getNano() > 0);
         assertEquals(process.getExitValue(), returnValue, "Invalid exit value -> " + execCommands);
         return process;
+    }
+
+
+    /**
+     * Assert test main output
+     *
+     * @param output the output stream to verify
+     * @param inputUser the user
+     * @param inputWorkingDir the working directory
+     * @param envValue the env value
+     * @param sysValue the sys value
+     * @param param1 the parameter 1
+     * @param param2 the parameter 2
+     */
+    protected void assertTestMainOut(ProcessBufferOutputStream output, String inputUser, String inputWorkingDir, String envValue, String sysValue, String param1, String param2) {
+
+        String user = inputUser;
+        String workingDir = inputWorkingDir;
+
+        if (user == null) {
+            user = System.getProperty("user.name");
+        }
+
+        if (workingDir == null) {
+            workingDir = System.getProperty("user.dir");
+        }
+        
+        assertEquals(TestMain.MAIN_HEADRER + TestMain.class.getName() + NL 
+                       + TestMain.PARAMETERS_TITLE + NL 
+                       + TestMain.PARAMETERS_PREFIX + "0" + TestMain.PARAMETERS_APPENDIX + param1 + NL
+                       + TestMain.PARAMETERS_PREFIX + "1" + TestMain.PARAMETERS_APPENDIX + param2 + NL
+                       + TestMain.STD_TEST + envValue + "/" + sysValue + " - [" + user + "]: " + workingDir + NL, 
+                     ProcessStreamUtil.getInstance().removeCR(output.toString()));
+    }
+
+    
+    /**
+     * Assert test main error output 
+     *
+     * @param errOutput the error output stream to verify
+     */
+    protected void assertTestMainErr(ProcessBufferOutputStream errOutput) {
+        assertEquals(TestMain.STD_ERR_TEST + NL, ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
     }
 }

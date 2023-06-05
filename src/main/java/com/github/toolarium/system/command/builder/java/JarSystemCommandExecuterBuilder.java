@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.builder.impl;
+package com.github.toolarium.system.command.builder.java;
 
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 
@@ -46,7 +46,7 @@ public class JarSystemCommandExecuterBuilder extends AbstractJavaSystemCommandEx
 
 
     /**
-     * @see com.github.toolarium.system.command.builder.impl.AbstractJavaSystemCommandExecuteBuilder#finalizeJavaExecutable()
+     * @see com.github.toolarium.system.command.builder.java.AbstractJavaSystemCommandExecuteBuilder#finalizeJavaExecutable()
      */
     @Override
     protected void finalizeJavaExecutable() {
@@ -55,7 +55,7 @@ public class JarSystemCommandExecuterBuilder extends AbstractJavaSystemCommandEx
 
 
     /**
-     * @see com.github.toolarium.system.command.builder.impl.AbstractJavaSystemCommandExecuteBuilder#javaMain()
+     * @see com.github.toolarium.system.command.builder.java.AbstractJavaSystemCommandExecuteBuilder#javaMain()
      */
     @Override
     protected String javaMain() {
