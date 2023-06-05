@@ -240,7 +240,7 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
      */
     public DockerSystemCommandExecuterBuilder images() {
         this.dockerCommand = "images";
-        this.name = null;
+        this.name = "*";
         return this;
     }
 

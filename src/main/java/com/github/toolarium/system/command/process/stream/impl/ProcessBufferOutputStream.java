@@ -25,6 +25,28 @@ public class ProcessBufferOutputStream extends ProcessOutputStream {
 
     
     /**
+     * Tests if this string starts with the specified prefix.
+     * 
+     * @param prefix the prefix.
+     * @return true if the prefix exists
+     */
+    public boolean startsWith(String prefix) {
+        return toString().startsWith(prefix);
+    }
+
+    
+    /**
+     * Search in the current collected buffer for a specific string.
+     * 
+     * @param str to search
+     * @return the position or -1 if it could not be found
+     */
+    public int indexOf(String str) {
+        return toString().indexOf(str);
+    }
+
+
+    /**
      * @see java.io.Closeable#close()
      */
     @Override

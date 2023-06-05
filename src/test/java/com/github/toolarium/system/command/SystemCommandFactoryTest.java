@@ -18,8 +18,11 @@ import com.github.toolarium.system.command.process.impl.ProcessInputStreamSource
 import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author patrick
  */
 public class SystemCommandFactoryTest extends AbstractProcessTest {
+    private static final String TOOLARIUM_TOOLARIUM_ICAP_CALMAV_DOCKER = "toolarium/toolarium-icap-calmav-docker:0.0.1";
     private static final Logger LOG = LoggerFactory.getLogger(SystemCommandFactoryTest.class);
     private static final String NL = "\n";
 
@@ -194,14 +198,18 @@ public class SystemCommandFactoryTest extends AbstractProcessTest {
         ProcessBufferOutputStream output = new ProcessBufferOutputStream();
         ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
         final IAsynchronousProcess startDockerProcess = SystemCommandExecuterFactory.builder().docker()
-                .run("toolarium/toolarium-icap-calmav-docker:0.0.1")
+                .run(TOOLARIUM_TOOLARIUM_ICAP_CALMAV_DOCKER)
                 .remove(true)
                 .name("icap-server")
                 .port(1344)
             .build()
             .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
 
-        Thread.sleep(2 * 1000);
+        // wait until it has started
+        String startMessage = "INFO: Starting up C-ICAP service.";
+        while (!output.startsWith(startMessage)) {
+            Thread.sleep(1000);
+        }
         
         // stop: docker stop icap-server
         final ISynchronousProcess stopDockerProcess = SystemCommandExecuterFactory.builder().docker()
@@ -216,7 +224,7 @@ public class SystemCommandFactoryTest extends AbstractProcessTest {
         startDockerProcess.waitFor();
         assertNotNull(startDockerProcess);
         assertNotNull(startDockerProcess.getExitValue());
-        assertEquals("INFO: Starting up C-ICAP service." + NL, ProcessStreamUtil.getInstance().removeCR(output.toString()));
+        assertEquals(startMessage + NL, ProcessStreamUtil.getInstance().removeCR(output.toString()));
         //assertEquals("" + NL, ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
         //assertEquals(0, startDockerProcess.getExitValue());
     }
@@ -256,22 +264,39 @@ public class SystemCommandFactoryTest extends AbstractProcessTest {
     }
 
     
-
-    
     /**
      * Shows the usage of the start and stop of a docker container
      * 
      * @throws InterruptedException in case of a thread interruption
+     * @throws IOException In case of an I/O error
      */
     //@Test
-    public void usageDockerImages() throws InterruptedException {
-        final ISynchronousProcess stopDockerProcess = SystemCommandExecuterFactory.builder().docker()
+    public void usageDockerImages() throws InterruptedException, IOException {
+        ISynchronousProcess dockerImagesProcess = SystemCommandExecuterFactory.builder().docker()
                 .images()
                 .build()
                 .runSynchronous();
-        assertNotNull(stopDockerProcess);
-        assertEquals("icap-server" + NL, stopDockerProcess.getOutput());
-        assertEquals("", stopDockerProcess.getErrorOutput());
+        assertNotNull(dockerImagesProcess);
+        assertTrue(dockerImagesProcess.getOutput().startsWith("REPOSITORY"));
+        assertEquals("", dockerImagesProcess.getErrorOutput());
+
+        dockerImagesProcess = SystemCommandExecuterFactory.builder().docker()
+                .images(TOOLARIUM_TOOLARIUM_ICAP_CALMAV_DOCKER)
+                .build()
+                .runSynchronous();
+        assertNotNull(dockerImagesProcess);
+        assertTrue(dockerImagesProcess.getOutput().startsWith("REPOSITORY"));
+
+        BufferedReader reader = new BufferedReader(new StringReader(dockerImagesProcess.getOutput()));
+        assertTrue(reader.readLine().startsWith("REPOSITORY"));
+
+        // toolarium/toolarium-icap-calmav-docker   0.0.1     30993438a894   20 months ago   481MB
+        String[] line = reader.readLine().split(" ");
+        assertEquals(TOOLARIUM_TOOLARIUM_ICAP_CALMAV_DOCKER, line[0] + ":" + line[3]);
+
+        assertEquals("", dockerImagesProcess.getErrorOutput());
+        
+        //assertEquals("icap-server" + NL, dockerImagesProcess.getOutput());
         //assertEquals(0, startDockerProcess.getExitValue());
         
     }
