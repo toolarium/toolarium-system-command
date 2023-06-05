@@ -15,10 +15,11 @@ import com.github.toolarium.system.command.dto.ISystemCommand.SystemCommandExecu
 import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IProcess;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
+import com.github.toolarium.system.command.util.OSUtil;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -79,7 +80,7 @@ public class AbstractProcessTest {
      * @return the prepared expression
      */
     protected String prepareGetEnvValue(String key, boolean hasConfition) {
-        if (isWindows()) {
+        if (OSUtil.getInstance().isWindows()) {
             if (hasConfition) {
                 return "!" + key + "!";
             } else {
@@ -92,23 +93,12 @@ public class AbstractProcessTest {
 
     
     /**
-     * Check if it is a windows os
-     *
-     * @return true if it is windows
-     */
-    protected boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().startsWith("windows");
-    }
-
-    
-    /**
      * Get all environment variables
      *
      * @return the command to get all environment variables
      */
     protected String selectAllEnvironmentVariables() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.startsWith("windows")) {
+        if (OSUtil.getInstance().isWindows()) {
             return "set";
         }
         

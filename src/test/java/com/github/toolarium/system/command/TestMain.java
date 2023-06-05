@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Test class
+ * Simple java test main class. This is used in some test cases.
  * 
  * @author patrick
  */

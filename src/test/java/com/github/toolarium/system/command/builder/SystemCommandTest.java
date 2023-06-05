@@ -1,19 +1,21 @@
 /*
- * SystemCommandFactoryTest.java
+ * SystemCommandTest.java
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command;
+package com.github.toolarium.system.command.builder;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.toolarium.system.command.AbstractProcessTest;
+import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.IProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
 import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +26,8 @@ import org.slf4j.LoggerFactory;
  *  
  * @author patrick
  */
-public class SystemCommandFactoryTest extends AbstractProcessTest {
-    private static final Logger LOG = LoggerFactory.getLogger(SystemCommandFactoryTest.class);
+public class SystemCommandTest extends AbstractProcessTest {
+    private static final Logger LOG = LoggerFactory.getLogger(SystemCommandTest.class);
 
     
     /**

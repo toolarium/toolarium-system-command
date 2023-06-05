@@ -7,6 +7,7 @@ package com.github.toolarium.system.command.builder.java;
 
 import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.util.OSUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -187,9 +188,8 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
         if (this.classPath == null) {
             this.classPath = classPath.trim();
         } else {
-            boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
             String classPathSeparator = ":";
-            if (isWindows) {
+            if (OSUtil.getInstance().isWindows()) {
                 classPathSeparator = ";";
             }
             

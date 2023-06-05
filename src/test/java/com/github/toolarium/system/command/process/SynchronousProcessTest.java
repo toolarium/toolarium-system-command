@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
+import com.github.toolarium.system.command.util.OSUtil;
 import com.github.toolarium.system.command.util.SystemCommandFactory;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,7 @@ public class SynchronousProcessTest extends AbstractProcessTest {
     @Test
     public void echoSynchrnousErrorStreamTest() {
         int returnValue = 127;
-        if (isWindows()) {
+        if (OSUtil.getInstance().isWindows()) {
             returnValue = 1;
         }
         

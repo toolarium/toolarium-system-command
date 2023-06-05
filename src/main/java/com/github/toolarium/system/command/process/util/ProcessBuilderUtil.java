@@ -132,6 +132,7 @@ public final class ProcessBuilderUtil {
             cmdList.addAll(shellEnd);
         }
         
+        //LOG.debug("Shell: " + cmdList);
         return cmdList;
     }
     

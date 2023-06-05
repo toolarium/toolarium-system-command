@@ -45,7 +45,7 @@ public final class SystemCommandFactory {
         return HOLDER.INSTANCE;
     }
 
-    
+
     /**
      * Create a sleep command
      *
@@ -54,8 +54,7 @@ public final class SystemCommandFactory {
      */
     public String createSleepCommand(int numberOfSeconds) {
         String sleepCmd = "sleep " + numberOfSeconds + " > /dev/null 2>&1";
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.startsWith("windows")) {
+        if (OSUtil.getInstance().isWindows()) {
             sleepCmd = "ping 127.0.0.1 -n " + numberOfSeconds + " > nul";
         }
         

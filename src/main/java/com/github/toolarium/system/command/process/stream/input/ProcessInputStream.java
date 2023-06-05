@@ -3,9 +3,10 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.stream.impl;
+package com.github.toolarium.system.command.process.stream.input;
 
 import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,7 +16,8 @@ import java.io.InputStream;
  *  
  * @author patrick
  */
-public class ProcessInputStream extends AbstractProcessStream implements IProcessInputStream {
+public class ProcessInputStream implements IProcessInputStream {
+    private final String id;
     private InputStream is;
 
     
@@ -23,6 +25,7 @@ public class ProcessInputStream extends AbstractProcessStream implements IProces
      * Constructor for ProcessInputStream
      */
     public ProcessInputStream() {
+        this.id = ProcessStreamUtil.getInstance().getId();
         this.is = System.in;
     }
 
@@ -33,6 +36,7 @@ public class ProcessInputStream extends AbstractProcessStream implements IProces
      * @param is the input stream
      */
     public ProcessInputStream(InputStream is) {
+        this();
         this.is = is;
     }
 
@@ -70,6 +74,15 @@ public class ProcessInputStream extends AbstractProcessStream implements IProces
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return is.read(b, off, len);
+    }
+
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return id;
     }
 
 

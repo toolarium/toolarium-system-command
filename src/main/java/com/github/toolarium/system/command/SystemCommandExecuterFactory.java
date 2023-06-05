@@ -17,6 +17,7 @@ import com.github.toolarium.system.command.executer.impl.UnixSystemCommandExecut
 import com.github.toolarium.system.command.executer.impl.WindowsSystemCommandExecuterImpl;
 import com.github.toolarium.system.command.process.folder.FolderCleanupService;
 import com.github.toolarium.system.command.process.thread.NameableThreadFactory;
+import com.github.toolarium.system.command.util.OSUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -141,12 +142,11 @@ public final class SystemCommandExecuterFactory {
             startFolderCleanupService();
         }
         
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.startsWith("windows")) {
+        if (OSUtil.getInstance().isWindows()) {
             
             LOG.debug("Choose " + WindowsSystemCommandExecuterImpl.class.getName() + " as executer.");
             return new WindowsSystemCommandExecuterImpl(systemCommandGroupList);
-        } else if (osName.startsWith("linux")) {
+        } else if (OSUtil.getInstance().isLinux()) {
             
             LOG.debug("Choose " + LinuxSystemCommandExecuterImpl.class.getName() + " as executer.");
             return new LinuxSystemCommandExecuterImpl(systemCommandGroupList);

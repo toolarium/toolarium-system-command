@@ -12,8 +12,9 @@ import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
+import com.github.toolarium.system.command.util.OSUtil;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -115,7 +116,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         String qm = ""; // quotation marks
         String eps1 = ""; // empty parameter space
         String eps2 = ""; // empty parameter space
-        if (isWindows()) {
+        if (OSUtil.getInstance().isWindows()) {
             qm = "\"";
             eps1 = SystemCommand.SPACE + SystemCommand.SPACE;
             eps2 = SystemCommand.SPACE;

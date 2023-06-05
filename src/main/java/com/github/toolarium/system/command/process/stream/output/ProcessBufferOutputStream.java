@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.stream.impl;
+package com.github.toolarium.system.command.process.stream.output;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

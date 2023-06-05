@@ -14,7 +14,7 @@ import com.github.toolarium.system.command.TestMain;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.File;

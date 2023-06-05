@@ -7,8 +7,7 @@ package com.github.toolarium.system.command.process.liveness.impl;
 
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
-import com.github.toolarium.system.command.process.stream.impl.ProcessInputStream;
-import com.github.toolarium.system.command.process.stream.impl.ProcessStreamConsumer;
+import com.github.toolarium.system.command.process.stream.input.ProcessInputStream;
 import java.io.BufferedInputStream;
 import java.time.Instant;
 import java.util.List;

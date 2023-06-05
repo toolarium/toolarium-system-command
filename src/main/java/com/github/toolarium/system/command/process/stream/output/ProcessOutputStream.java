@@ -3,10 +3,11 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.stream.impl;
+package com.github.toolarium.system.command.process.stream.output;
 
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.IProcessStreamExceptionHandler;
+import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -16,12 +17,13 @@ import java.io.OutputStream;
  * 
  * @author patrick
  */
-public class ProcessOutputStream  extends AbstractProcessStream implements IProcessOutputStream {
+public class ProcessOutputStream implements IProcessOutputStream {
+    private final String id;
     private OutputStream os;
     private boolean quiet;
     private byte[] linePrefix;
     private IProcessStreamExceptionHandler processStreamExceptionHandler;
-
+    
     
     /**
      * Constructor for ProcessOutputStream
@@ -78,6 +80,7 @@ public class ProcessOutputStream  extends AbstractProcessStream implements IProc
      * @param processStreamExceptionHandler the process stream exception handler
      */
     public ProcessOutputStream(OutputStream os, boolean quiet, byte[] linePrefix, IProcessStreamExceptionHandler processStreamExceptionHandler) {
+        this.id = ProcessStreamUtil.getInstance().getId();
         this.os = os;
         this.quiet = quiet;
         this.linePrefix = linePrefix;
@@ -176,6 +179,15 @@ public class ProcessOutputStream  extends AbstractProcessStream implements IProc
         return processStreamExceptionHandler;
     }
     
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return id;
+    }
+
     
     /**
      * Get the output stream

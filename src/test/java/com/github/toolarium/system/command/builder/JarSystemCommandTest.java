@@ -14,7 +14,7 @@ import com.github.toolarium.system.command.TestMain;
 import com.github.toolarium.system.command.Version;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import org.junit.jupiter.api.Test;
 
 

@@ -15,7 +15,7 @@ import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
 import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
-import com.github.toolarium.system.command.process.stream.impl.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -7,6 +7,7 @@ package com.github.toolarium.system.command.builder.docker;
 
 import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.util.OSUtil;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -310,8 +311,7 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
             command(parameters, null, false, false);
         }
         
-        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-        if (!isWindows) {
+        if (!OSUtil.getInstance().isWindows()) {
             systemCommandGroupList.forceRunAsScript();
         }
     }
