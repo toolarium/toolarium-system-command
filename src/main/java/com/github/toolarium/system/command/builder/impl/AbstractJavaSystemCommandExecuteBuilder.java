@@ -285,7 +285,8 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
             command(jdkPath);
         }
         
-        command(javaExecutable, javaExecutable);
+        command(javaExecutable);
+        finalizeJavaExecutable();
         
         if (classPath != null && !classPath.isBlank()) {
             command("-cp" + SystemCommand.SPACE + classPath);
@@ -316,6 +317,13 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
         if (parameters != null && !parameters.isEmpty()) {
             command(parameters, null, false, true);
         }
+    }
+
+
+    /**
+     * Finalize the java executable
+     */
+    protected void finalizeJavaExecutable() {
     }
 
 

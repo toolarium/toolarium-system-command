@@ -17,3 +17,31 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.30'
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.2.3'
 }
+
+
+/****************************************************************************************
+ * Test jar file
+ ****************************************************************************************/
+task testJar(type: Jar, dependsOn: ['compileTestJava']) { jar ->
+    group = 'Build'
+    duplicatesStrategy = 'exclude' // work around, currendly don't work "$duplicatesStrategy"
+    description = 'Assembles the kubernetes configuration into a jar file'
+    from(sourceSets["test"].output)
+    classifier = 'test'
+
+    // define proper manifest
+    manifest {
+        attributes  'Specification-Title'   : rootProject.name,
+                    'Specification-Version' : project.version,
+                    'Implementation-Title'  : rootProject.name,
+                    'Implementation-Version': project.version + project.ext.scmVersionNumber,
+                    'Created-By'            : project.ext.buildToolVersionStackMessage,
+                    'Built-By'              : publishingUsername,
+                    'Build-Timestamp'       : BUILD_TIMESTAMP,
+                    'Build-OS'              : "${System.properties['os.name']} (${System.properties['os.version']}), ${System.properties['os.arch']}",
+					'Main-Class'			: "com.github.toolarium.system.command.TestMain"
+    }
+}
+//testJar.mustRunAfter("compileTestJava")
+compileTestJava.finalizedBy(testJar)
+//test.mustRunAfter(testJar)

@@ -14,6 +14,7 @@ import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
  * @author patrick
  */
 public class JarSystemCommandExecuterBuilder extends AbstractJavaSystemCommandExecuteBuilder {
+    private String jarParameter;
     private String jar;
     
     
@@ -25,6 +26,7 @@ public class JarSystemCommandExecuterBuilder extends AbstractJavaSystemCommandEx
     public JarSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
         this.jar = null;
+        jarParameter = "-jar";
     }
 
     
@@ -44,12 +46,22 @@ public class JarSystemCommandExecuterBuilder extends AbstractJavaSystemCommandEx
 
 
     /**
+     * @see com.github.toolarium.system.command.builder.impl.AbstractJavaSystemCommandExecuteBuilder#finalizeJavaExecutable()
+     */
+    @Override
+    protected void finalizeJavaExecutable() {
+        command(jarParameter);
+    }
+
+
+    /**
      * @see com.github.toolarium.system.command.builder.impl.AbstractJavaSystemCommandExecuteBuilder#javaMain()
      */
     @Override
     protected String javaMain() {
+        if (jar == null || jar.isBlank()) {
+            throw new IllegalArgumentException("Missing jar / java main class!");
+        }
         return jar;
     }
-
-    
 }

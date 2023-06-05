@@ -37,6 +37,15 @@ public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterT
         return new SystemCommandExecuterBuilder(systemCommandGroupList);
     }
 
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder#jar(java.lang.String)
+     */
+    @Override
+    public JarSystemCommandExecuterBuilder jar(String jarFile) {
+        return new JarSystemCommandExecuterBuilder(systemCommandGroupList).jar(jarFile);
+    }
+
 
     /**
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder#java(java.lang.String)
@@ -52,7 +61,6 @@ public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterT
      */
     @Override
     public DockerSystemCommandExecuterBuilder docker(String image) {
-        return new DockerSystemCommandExecuterBuilder(systemCommandGroupList);
+        return new DockerSystemCommandExecuterBuilder(systemCommandGroupList).image(image);
     }
-
 }

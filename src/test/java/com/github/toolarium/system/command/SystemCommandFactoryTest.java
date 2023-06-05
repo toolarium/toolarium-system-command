@@ -147,6 +147,46 @@ public class SystemCommandFactoryTest extends AbstractProcessTest {
      * Shows the usage
      * 
      * @throws InterruptedException in case of a thread interruption
+     */
+    @Test
+    public void usageJar() throws InterruptedException {
+        final String param1 = "-param1";
+        final String param2 = "-newValue=this is a parameter with spaces";
+        final String envValue = "1";
+        final String sysValue = "new value";
+        final int exitValue = 1;
+        
+        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
+            .jar("build/libs/toolarium-system-command-" + Version.VERSION + "-test.jar")
+                //.environmentVariable("CLASSPATH", "build/libs/toolarium-system-command-" + Version.VERSION + ".jar")
+                .environmentVariable(TestMain.ENV_KEY, envValue)
+                //.javaMemory("256M", "1024M")
+                .systemProperty(TestMain.SYSTEM_PROPERTY_KEY, sysValue)
+                .systemProperty(TestMain.SYSTEM_PROPERTY_EXIT_VALUE, "" + exitValue)
+                .systemProperty(TestMain.SYSTEM_PROPERTY_PRINT_VERBOSE, "true")
+                .parameter(param1).parameter(param2)
+            .build()
+            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+        myAsyncProcess.waitFor();
+        assertNotNull(myAsyncProcess);
+        assertNotNull(myAsyncProcess.getExitValue());
+        assertEquals(exitValue, myAsyncProcess.getExitValue());
+        assertEquals(TestMain.MAIN_HEADRER + TestMain.class.getName() + NL 
+                     + TestMain.PARAMETERS_TITLE + NL 
+                     + TestMain.PARAMETERS_PREFIX + "0" + TestMain.PARAMETERS_APPENDIX + param1 + NL
+                     + TestMain.PARAMETERS_PREFIX + "1" + TestMain.PARAMETERS_APPENDIX + param2 + NL
+                     + TestMain.STD_TEST + envValue + "/" + sysValue + NL, ProcessStreamUtil.getInstance().removeCR(output.toString()));
+        assertEquals(TestMain.STD_ERR_TEST + NL, ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
+        //assertNotNull(myAsyncProcess.getTotalCpuDuration());
+    }
+
+    
+    /**
+     * Shows the usage
+     * 
+     * @throws InterruptedException in case of a thread interruption
      * @throws IOException In case of I/O errors
      */
     @Test
