@@ -49,6 +49,15 @@ public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterT
         return new JarSystemCommandExecuterBuilder(systemCommandGroupList).jar(jarFile);
     }
 
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder#java(java.lang.String)
+     */
+    @Override
+    public JavaSystemCommandExecuterBuilder java(Class<?> clazz) {
+        return new JavaSystemCommandExecuterBuilder(systemCommandGroupList).javaMain(clazz.getName());
+    }
+
 
     /**
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder#java(java.lang.String)

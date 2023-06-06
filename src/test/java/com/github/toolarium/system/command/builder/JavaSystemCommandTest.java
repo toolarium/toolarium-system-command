@@ -88,6 +88,42 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
+            .java(TestMain.class)                                                 // use default java
+                .classPath("build/classes/java/test")                             // set classpath by environment variable
+                .classPath("build/classes/java/main")                             // set classpath by environment variable
+                .environmentVariable(TestMain.ENV_KEY, envValue)                  // set an additional environment variable
+                .systemProperty(TestMain.SYSTEM_PROPERTY_KEY, sysValue)           // set system properties
+                .systemProperty(TestMain.SYSTEM_PROPERTY_EXIT_VALUE, "" + exitValue)
+                .systemProperty(TestMain.SYSTEM_PROPERTY_PRINT_VERBOSE, TRUE)
+                .parameter(param1).parameter(param2)
+            .build()
+            .runAsynchronous(output, errOutput);
+        myAsyncProcess.waitFor();                                                 // wait until process ends
+        assertNotNull(myAsyncProcess);
+        assertNotNull(myAsyncProcess.getExitValue());
+        assertEquals(exitValue, myAsyncProcess.getExitValue());
+        //assertNotNull(myAsyncProcess.getTotalCpuDuration());
+        assertTestMainOut(output, null, null, envValue, sysValue, param1, param2);
+        assertTestMainErr(errOutput);
+    }
+
+    
+    /**
+     * Shows the usage
+     * 
+     * @throws InterruptedException in case of a thread interruption
+     */
+    @Test
+    public void usageJavaDefaultJavaAndSetClassPathInEnvironment() throws InterruptedException {
+        final String param1 = "-param1";
+        final String param2 = "-newValue=this is a parameter with spaces";
+        final String envValue = "1";
+        final String sysValue = "new value";
+        final int exitValue = 1;
+        
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("com.github.toolarium.system.command.TestMain")                 // use default java
                 .environmentVariable("CLASSPATH", "build/classes/java/test")      // set classpath by environment variable
                 .environmentVariable(TestMain.ENV_KEY, envValue)                  // set an additional environment variable

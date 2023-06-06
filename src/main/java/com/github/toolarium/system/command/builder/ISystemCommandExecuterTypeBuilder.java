@@ -38,6 +38,15 @@ public interface ISystemCommandExecuterTypeBuilder {
     /**
      * Get a java system command executer builder
      *
+     * @param clazz the class
+     * @return the java system command executer builder
+     */
+    JavaSystemCommandExecuterBuilder java(Class<?> clazz);
+
+    
+    /**
+     * Get a java system command executer builder
+     *
      * @param main the java main
      * @return the java system command executer builder
      */
