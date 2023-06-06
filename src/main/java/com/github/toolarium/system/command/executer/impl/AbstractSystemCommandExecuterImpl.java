@@ -84,7 +84,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      */
     @Override
     public ISynchronousProcess runSynchronous(int numberOfSecondsToWait) {
-        return runSynchronous(ProcessStreamFactory.getInstance().getStandardIn(), numberOfSecondsToWait);
+        return runSynchronous(null, numberOfSecondsToWait);
     }
 
 
@@ -279,7 +279,13 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      * @param processErr the process error stream
      */
     protected void setProcessInputStreamSource(ISystemCommandGroup systemCommandGroup, ProcessBuilder processBuilder, IProcessInputStream processInputStream, IProcessOutputStream processOut, IProcessOutputStream processErr) {
-        ProcessInputStreamSource inputStreamSource = processInputStream.getProcessInputStreamSource();
+        ProcessInputStreamSource inputStreamSource;
+        if (processInputStream == null) {
+            inputStreamSource = ProcessStreamFactory.getInstance().getStandardIn().getProcessInputStreamSource();
+        } else {
+            inputStreamSource = processInputStream.getProcessInputStreamSource();
+        }
+        
         if (inputStreamSource != null) {
             switch (inputStreamSource) {
                 case DISCARD:

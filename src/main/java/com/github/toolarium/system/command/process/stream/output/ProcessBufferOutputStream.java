@@ -86,9 +86,9 @@ public class ProcessBufferOutputStream extends ProcessOutputStream {
         return ((ByteArrayOutputStream)getOutputStream()).toByteArray();
     }
     
-    
+
     /**
-     * @see com.github.toolarium.system.command.process.stream.impl.AbstractProcessStream#toString()
+     * @see com.github.toolarium.system.command.process.stream.output.ProcessOutputStream#toString()
      */
     @Override
     public String toString() {
