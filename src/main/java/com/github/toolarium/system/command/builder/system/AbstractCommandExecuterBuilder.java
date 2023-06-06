@@ -213,6 +213,16 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
         return this;
     }
 
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     */
+    @Override
+    public ISystemCommandExecuterBuilder disableAutoCleanupScriptPath() {
+        systemCommandGroupList.disableAutoCleanupScriptPath();
+        return this;
+    }
+
 
     /**
      * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#build()

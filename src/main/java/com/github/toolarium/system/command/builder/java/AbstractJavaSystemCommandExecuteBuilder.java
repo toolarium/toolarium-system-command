@@ -318,6 +318,16 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
         return this;
     }
 
+    
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     */
+    @Override
+    public AbstractJavaSystemCommandExecuteBuilder disableAutoCleanupScriptPath() {
+        super.disableAutoCleanupScriptPath();
+        return this;
+    }
+
 
     /**
      * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)

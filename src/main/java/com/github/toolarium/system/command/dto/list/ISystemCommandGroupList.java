@@ -68,6 +68,20 @@ public interface ISystemCommandGroupList {
 
     
     /**
+     * Cleanup script path automated.
+     *
+     * @return true to cleanup
+     */
+    boolean autoCleanupScriptPath();
+
+    
+    /**
+     * Disable auto cleanup script path.
+     */
+    void disableAutoCleanupScriptPath();
+
+    
+    /**
      * Start a new system command group
      */
     void newGroup();

@@ -11,18 +11,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.TestMain;
-import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
-import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 
@@ -151,6 +150,8 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
      */
     @Test
     public void usageInputStream() throws InterruptedException, IOException {
+        SystemCommandExecuterFactory.getInstance().startFolderCleanupService(5, 10, TimeUnit.MILLISECONDS);
+
         IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getEmptyStandardIn();
         ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
@@ -178,25 +179,30 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
                 .build()
                 .runAsynchronous(processInputStream, output, errOutput);           // standard in, read from bufffer
         myAsyncProcess.waitFor();                                                  // wait until process ends
+
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
         assertEquals(TEST_BUFFER + NL, ProcessStreamUtil.getInstance().removeCR(output.toString()));
         assertEquals("", ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
 
         // file
-        output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
-        File inputFile = ScriptUtil.getInstance().createTempFile(new SystemCommandGroup(), "testinput.txt");
+        File inputFile = new File("build/testinput.txt");
+        if (inputFile.exists()) {
+            inputFile.delete();
+        }
+        inputFile.createNewFile();
         processInputStream = ProcessStreamFactory.getInstance().getStandardInFromFile(inputFile);
-        Files.writeString(inputFile.toPath(), "input content", StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        Files.writeString(inputFile.toPath(), "input content", StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         myAsyncProcess = SystemCommandExecuterFactory.builder()
              .java("com.github.toolarium.system.command.TestMain")
                 .inheritJre()                                                      // inherit jre
                 .inheritClassPath()                                                // inherit classpath
-                .systemProperty(TestMain.SYSTEM_PROPERTY_READINPUT, TRUE)        // system property force TestMain to read from inputstream 
+                .systemProperty(TestMain.SYSTEM_PROPERTY_READINPUT, TRUE)          // system property force TestMain to read from inputstream 
                 .build()
                 .runAsynchronous(processInputStream, output, errOutput);
-        myAsyncProcess.waitFor();                                                  // wait until process ends
+        myAsyncProcess.waitFor();
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
         assertEquals("input content\n", ProcessStreamUtil.getInstance().removeCR(output.toString()));

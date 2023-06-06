@@ -274,6 +274,16 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     */
+    @Override
+    public DockerSystemCommandExecuterBuilder disableAutoCleanupScriptPath() {
+        super.disableAutoCleanupScriptPath();
+        return this;
+    }
+
+    
+    /**
      * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */

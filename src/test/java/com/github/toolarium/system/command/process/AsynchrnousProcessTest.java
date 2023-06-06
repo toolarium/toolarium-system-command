@@ -50,7 +50,6 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
-        SystemCommandExecuterFactory.getInstance().startFolderCleanupService();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command)
                 .build()
@@ -62,6 +61,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
                                                                null,     // no environment 
                                                                0,        // return value
                                                                command); // command
+        
         assertNotNull(process);
     }
 
@@ -77,10 +77,13 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         String command2 = "echo ok2";
         ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         ProcessBufferOutputStream errorOutputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        
+        SystemCommandExecuterFactory.getInstance().startFolderCleanupService(5, 10, TimeUnit.MILLISECONDS, 10 * 1000);
         IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command1).onSuccessOrError()
                 .system().command(command2)
+                .disableAutoCleanupScriptPath()
                 .build()
                 .runAsynchronous(processInputStream, outputStream,  errorOutputStream), 
                                                                outputStream, errorOutputStream,
@@ -94,6 +97,8 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         
         // close resource
         process.close();
+        
+        Thread.sleep(5 * 1000);
     }
 
     
@@ -104,8 +109,8 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
      */
     @Test
     public void echoMultipleCommandInSameProcessWithEnvironmenVariablesTest() throws InterruptedException {
-        SystemCommandExecuterFactory.getInstance().stopFolderCleanupService();
-        SystemCommandExecuterFactory.getInstance().startFolderCleanupService(0, 500, TimeUnit.MILLISECONDS);
+        //SystemCommandExecuterFactory.getInstance().stopFolderCleanupService();
+        //SystemCommandExecuterFactory.getInstance().startFolderCleanupService(0, 500, TimeUnit.MILLISECONDS);
         
         Map<String, String> systemProperties = new LinkedHashMap<>();
         systemProperties.put("myapp", "the app");
@@ -179,7 +184,13 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
             }
 
             String result = ProcessStreamUtil.getInstance().removeCR(outputStream.toString());
-            LOG.debug("Compare result | [" + result + "] == [" + expectedOutput + "].");
+            
+            String equals = "==";
+            if (!result.equals(expectedOutput)) {
+                equals = "!=";
+            }
+            
+            LOG.debug("Compare result | [" + result + "] " + equals + " [" + expectedOutput + "].");
             
             if (!result.equals(expectedOutput)) {
                 

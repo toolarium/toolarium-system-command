@@ -10,7 +10,6 @@ import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -27,16 +26,16 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
     private static final long serialVersionUID = -7355466348182867999L;
     private final String id;
     private List<ISystemCommandGroup> systemCommandGroupList;
-    private Path tempPath;
+    private boolean autoCleanupScriptPath;
 
     
     /**
      * Constructor for SystemCommandGroupList
      */
     public SystemCommandGroupList() {
-        this.id = "L" + ProcessStreamUtil.getInstance().getId();
+        this.id = ProcessStreamUtil.getInstance().getId();
         this.systemCommandGroupList = new ArrayList<>();
-        this.tempPath = null;
+        this.autoCleanupScriptPath = true;
     }
 
     
@@ -118,6 +117,24 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#autoCleanupScriptPath()
+     */
+    @Override
+    public boolean autoCleanupScriptPath() {
+        return autoCleanupScriptPath;
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#disableAutoCleanupScriptPath()
+     */
+    @Override
+    public void disableAutoCleanupScriptPath() {
+        autoCleanupScriptPath = false;
+    }
+    
+    
+    /**
      * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#newGroup()
      */
     @Override
@@ -154,7 +171,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, systemCommandGroupList, tempPath);
+        return Objects.hash(id, systemCommandGroupList, autoCleanupScriptPath);
     }
 
 
@@ -176,10 +193,9 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
         }
         
         SystemCommandGroupList other = (SystemCommandGroupList) obj;
-        return Objects.equals(id, other.id) && Objects.equals(systemCommandGroupList, other.systemCommandGroupList)
-                && Objects.equals(tempPath, other.tempPath);
+        return Objects.equals(id, other.id) && Objects.equals(systemCommandGroupList, other.systemCommandGroupList) && autoCleanupScriptPath == other.autoCleanupScriptPath;
     }
-    
+
 
     /**
      * @see java.lang.Object#toString()

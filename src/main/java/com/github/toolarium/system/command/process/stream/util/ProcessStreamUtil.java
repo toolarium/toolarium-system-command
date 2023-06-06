@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
@@ -66,7 +68,8 @@ public final class ProcessStreamUtil {
      * @return the id
      */
     public String getId() {
-        return Integer.toHexString(ThreadLocalRandom.current().nextInt()).toUpperCase();
+        return DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now())
+               + String.format("%02x", ThreadLocalRandom.current().nextInt(16)).toUpperCase();
     }
     
     

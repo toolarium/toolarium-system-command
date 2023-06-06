@@ -7,7 +7,9 @@ package com.github.toolarium.system.command.process.liveness.impl;
 
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.BufferedInputStream;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
@@ -21,23 +23,36 @@ import org.slf4j.LoggerFactory;
  */
 public class ProcessLiveness implements IProcessLiveness, Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessLiveness.class);
+    private String id;
     private final List<Process> processList;
     private ProcessStreamConsumer outputStream;
     private ProcessStreamConsumer errorStream;
     private volatile boolean isAlive;
     private Instant startupTime;
     private long pollTimeout;
+    private Path scriptPath;
+    private boolean autoCleanupScriptPath;
 
     
     /**
      * Constructor for ProcessLiveness
-     *
+     * 
+     * @param id the id 
      * @param processList the process list
      * @param outputStream the output stream
      * @param errorStream the error output stream
+     * @param scriptPath the script path
+     * @param autoCleanupScriptPath true to cleanup automated
      * @param pollTimeout the poll timeout, e.g. 10
      */
-    public ProcessLiveness(final List<Process> processList, final IProcessOutputStream outputStream, final IProcessOutputStream errorStream, long pollTimeout) {
+    public ProcessLiveness(String id, 
+                           final List<Process> processList, 
+                           final IProcessOutputStream outputStream, 
+                           final IProcessOutputStream errorStream,
+                           final Path scriptPath,
+                           final boolean autoCleanupScriptPath,
+                           long pollTimeout) {
+        this.id = id;
         this.processList = processList;
         Process process = getProcess();
 
@@ -49,6 +64,8 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             this.errorStream = new ProcessStreamConsumer(new BufferedInputStream(process.getErrorStream()), errorStream);
         }
         
+        this.scriptPath = scriptPath;
+        this.autoCleanupScriptPath = autoCleanupScriptPath;
         this.pollTimeout = pollTimeout;
         this.isAlive = true;
         if (process == null || process.info() == null || process.info().startInstant().isEmpty()) {
@@ -57,7 +74,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             startupTime = getProcess().info().startInstant().get();
         }
     }
-    
+
 
     /**
      * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#isAlive()
@@ -92,7 +109,16 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             }
         } while (isAlive());
         
-        LOG.info("Ended process liveness thread for process " + process.pid() + ".");
+        if (scriptPath != null) {
+            LOG.info("Process ended (id:" + id + ", pid:" + process.pid() + ", script:" + scriptPath + ")");
+        } else {
+            LOG.info("Process ended (id:" + id + ", pid:" + process.pid() + ")");
+        }
+        
+        if (autoCleanupScriptPath && scriptPath != null && scriptPath.toFile().exists()) {
+            LOG.debug("Delete script path [" + scriptPath + "]...");
+            ProcessStreamUtil.getInstance().deleteDirectory(scriptPath);
+        }
     }
 
     
@@ -159,21 +185,40 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
      * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#getProcessId()
      */
     @Override
-    public String getProcessId() {
-        String pid = "n/a";
+    public Long getProcessId() {
         if (getProcess() != null) {
-            pid = Long.toString(getProcess().pid());
+            return getProcess().pid();
         }
         
-        return pid;
+        return null;
+    }
+    
+    
+    /**
+     * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#autoCleanupScriptPath()
+     */
+    @Override
+    public boolean autoCleanupScriptPath() {
+        return autoCleanupScriptPath;
     }
 
+
+    /**
+     * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#getScriptPath()
+     */
+    @Override
+    public Path getScriptPath() {
+        return scriptPath;
+    }
+    
 
     /**
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        return "ProcessLiveness [startupTime=" + startupTime + ", pid=" + getProcessId() + ", isAlive=" + isAlive() + ", outputStream=" + outputStream + ", errorStream=" + errorStream + ", pollTimeout=" + getPollTimeout() + "]";
+        return "ProcessLiveness [startupTime=" + startupTime + ", isAlive=" + isAlive() + ", pid=" + getProcessId() +  " (" + processList + ")"
+                + ", outputStream=" + outputStream + ", errorStream=" + errorStream + ", pollTimeout=" + pollTimeout
+                + ", scriptPath=" + scriptPath + ", autoCleanupScriptPath=" + autoCleanupScriptPath + "]";
     }
 }

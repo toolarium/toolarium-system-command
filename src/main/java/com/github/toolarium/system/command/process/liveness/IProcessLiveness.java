@@ -5,6 +5,7 @@
  */
 package com.github.toolarium.system.command.process.liveness;
 
+import java.nio.file.Path;
 import java.time.Instant;
 
 /**
@@ -51,5 +52,21 @@ public interface IProcessLiveness extends Runnable {
      *
      * @return the process id
      */
-    String getProcessId();
+    Long getProcessId();
+
+    
+    /**
+     * Cleanup the script path after process end
+     *
+     * @return true to cleanup automated
+     */
+    boolean autoCleanupScriptPath();
+
+    
+    /**
+     * Get the script path of this process or null if there is no folder
+     *
+     * @return the script folder
+     */
+    Path getScriptPath();
 }

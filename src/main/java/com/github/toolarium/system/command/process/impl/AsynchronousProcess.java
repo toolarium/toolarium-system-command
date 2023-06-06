@@ -5,17 +5,14 @@
  */
 package com.github.toolarium.system.command.process.impl;
 
-import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
-import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,19 +218,15 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
                 getProcess().waitFor();
             } catch (InterruptedException e) {
                 // NOP
-                return;
             }
         }
-        
-        Iterator<ISystemCommandGroup> it = getSystemCommandGroupList().iterator();
-        while (it.hasNext()) {
-            Path path = ScriptUtil.getInstance().prepareTempPath(it.next());
-            
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Delete directory [" + path + "]...");
+
+        if (processLiveness.autoCleanupScriptPath()) {
+            Path scriptPath = processLiveness.getScriptPath();
+            if (scriptPath != null && scriptPath.toFile().exists()) {
+                LOG.debug("Delete script path [" + scriptPath + "]...");
+                ProcessStreamUtil.getInstance().deleteDirectory(scriptPath);
             }
-            
-            ProcessStreamUtil.getInstance().deleteDirectory(path);
         }
     }
 

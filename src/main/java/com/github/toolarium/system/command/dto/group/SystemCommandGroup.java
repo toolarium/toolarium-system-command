@@ -30,7 +30,7 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
      * Constructor for SystemCommandGroup
      */
     public SystemCommandGroup() {
-        this.id = "L" + ProcessStreamUtil.getInstance().getId();
+        this.id = ProcessStreamUtil.getInstance().getId();
         this.systemCommandList = new ArrayList<>();
         this.runAsScript = null;
     }

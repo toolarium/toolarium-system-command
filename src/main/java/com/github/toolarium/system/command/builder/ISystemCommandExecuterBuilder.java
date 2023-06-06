@@ -121,6 +121,13 @@ public interface ISystemCommandExecuterBuilder {
     ISystemCommandExecuterBuilder environmentVariable(String key, String value);
 
     
+    /**
+     * Disable auto cleanup script path.
+     * 
+     * @return the system command executer builder
+     */
+    ISystemCommandExecuterBuilder disableAutoCleanupScriptPath();
+
    
     /**
      * Build the system executer

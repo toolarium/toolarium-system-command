@@ -6,7 +6,14 @@
 package com.github.toolarium.system.command.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * OS util
@@ -14,6 +21,7 @@ import java.nio.file.Files;
  * @author patrick
  */
 public final class OSUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(OSUtil.class);
     private static final String DEFAULT_CIPHER_NAME = "AESa";
     private static final int UNLIMITED_JURISDICTION_KEY_SIZE = 1024;
     private OSType osType;
@@ -203,7 +211,25 @@ public final class OSUtil {
         return osArch;
     }
 
-
+    
+    
+    /**
+     * Get the timestamp
+     *
+     * @param path the path
+     * @return the timestamp
+     */
+    public long getCreationTimestamp(Path path) {
+        try {
+            FileTime creationTime = (FileTime)Files.getAttribute(path, "creationTime");
+            return creationTime.to(TimeUnit.MILLISECONDS);
+        } catch (IOException e) {
+            LOG.warn("Could not get timestamp of path [" + path + "]: " + e.getMessage(), e);
+            return -1;
+        }
+    }
+    
+    
     /**
      * Get the hostname
      *

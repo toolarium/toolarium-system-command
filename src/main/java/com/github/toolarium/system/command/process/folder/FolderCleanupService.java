@@ -6,10 +6,10 @@
 package com.github.toolarium.system.command.process.folder;
 
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
-import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
+import com.github.toolarium.system.command.process.util.ScriptUtil;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FolderCleanupService implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(FolderCleanupService.class);
+    private long newFolderThreshold;
+    private long lockFolderThreshold;
     private Path basePath;
  
     
@@ -28,9 +30,12 @@ public class FolderCleanupService implements Runnable {
      * Constructor for FolderCleanupService
      *
      * @param basePath the base path
+     * @param lockFolderThreshold the lock folder threshold
      */
-    public FolderCleanupService(Path basePath) {
+    public FolderCleanupService(Path basePath, long lockFolderThreshold) {
         this.basePath = basePath;
+        this.newFolderThreshold  = 10 * 60 * 1000; // 10 minutes
+        this.lockFolderThreshold = lockFolderThreshold; // 1 * 60 * 60 * 1000; // one day
     }
 
     
@@ -41,51 +46,18 @@ public class FolderCleanupService implements Runnable {
     public void run() {
         try {
             try {
-                Files.find(basePath, Integer.MAX_VALUE, (filePath, fileAttr) -> fileAttr.isRegularFile()).forEach(file -> {
-                    if (file.toFile().getName().endsWith(".pid")) {
-                        Long pid = readPidFile(file);
-                        if (!ProcessBuilderUtil.getInstance().isProcessRunning(pid)) {
-                            final String name = file.toFile().getName();
-                            String commandId = null;
-                            int idx = name.lastIndexOf('.');
-                            if (idx > 0) {
-                                commandId = name.substring(0, idx);
-                            }
-                            
-                            LOG.info("Process ended (id:" + commandId + ", pid:" + pid + ")");
-
-                            ProcessStreamUtil.getInstance().deleteDirectory(file.getParent());
-                        }
+                List<Path> directoriesToDelete = ScriptUtil.getInstance().selectInvalidProcessDirectories(basePath, newFolderThreshold, lockFolderThreshold);
+                if (directoriesToDelete != null && !directoriesToDelete.isEmpty()) {
+                    for (Path direcotry : directoriesToDelete) {
+                        ProcessStreamUtil.getInstance().deleteDirectory(direcotry);
                     }
-                });
+                }
             } catch (IOException e) {
                 LOG.warn("Error occured: " + e.getMessage(), e);
             }
-    
-            
         } catch (RuntimeException e) {
-            LOG.info("Interupt process monitor thread...");
+            LOG.warn("Interupt process monitor thread: " + e.getMessage(), e);
             Thread.currentThread().interrupt();
         }
     }
-
-
-    /**
-     * Read a pid file
-     * 
-     * @param file the file
-     * @return the read and parsed pid
-     */
-    public static Long readPidFile(Path file) {
-        try {
-            return Long.valueOf(Files.readString(file).trim());
-        } catch (NumberFormatException e) {
-            LOG.warn("The content of the file [" + file + "] can't be proper parsed: " + e.getMessage(), e);
-        } catch (IOException e) {
-            LOG.warn("Can't access the file  [" + file + "]: " + e.getMessage(), e);
-        }
-        
-        return null;
-    }
-
 }

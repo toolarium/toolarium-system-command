@@ -47,11 +47,12 @@ public final class SystemCommandExecuterFactory {
     private static final Logger LOG = LoggerFactory.getLogger(SystemCommandExecuterFactory.class);
     private static NameableThreadFactory nameableThreadFactory = new NameableThreadFactory("folder");
     private ScheduledExecutorService folderCleanupService;
-    private volatile boolean folderCleanupServiceIsRunning;
+    private volatile Boolean folderCleanupServiceIsRunning;
     private long initialDelay = INITIAL_DELAY;
     private long period = PERIOD;
     private TimeUnit timeUnit = TIMEUNIT;
     private Path basePath;
+    private long lockFolderThreshold = 1 * 60 * 60 * 1000; // one day
 
 
     /**
@@ -68,7 +69,7 @@ public final class SystemCommandExecuterFactory {
      * Constructor
      */
     private SystemCommandExecuterFactory() {
-        folderCleanupServiceIsRunning = Boolean.FALSE;
+        folderCleanupServiceIsRunning = null;
         //startFolderCleanupService();
 
         setScriptFolderBasePath(null);
@@ -137,8 +138,8 @@ public final class SystemCommandExecuterFactory {
      * @return the system command executer
      */
     public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommandGroupList systemCommandGroupList) {
-        
-        if (systemCommandGroupList.runAsScript() && !folderCleanupServiceIsRunning) {
+        if (systemCommandGroupList.runAsScript() && folderCleanupServiceIsRunning == null) {
+            LOG.debug("System command group list use runs as script: " + systemCommandGroupList.getId() + ".");
             startFolderCleanupService();
         }
         
@@ -161,14 +162,16 @@ public final class SystemCommandExecuterFactory {
      * Start the folder cleanup service
      */
     public void startFolderCleanupService() {
-        if (folderCleanupServiceIsRunning) {
+        if (folderCleanupServiceIsRunning != null && folderCleanupServiceIsRunning) {
             return;
         }
 
-        folderCleanupServiceIsRunning = true;
-        LOG.info("Start folder cleanup service...");
-        folderCleanupService = Executors.newScheduledThreadPool(1, nameableThreadFactory);
-        folderCleanupService.scheduleAtFixedRate(new FolderCleanupService(basePath), initialDelay, period, timeUnit);
+        synchronized (this) {
+            folderCleanupServiceIsRunning = Boolean.TRUE;
+            LOG.info("Start folder cleanup service...");
+            folderCleanupService = Executors.newScheduledThreadPool(1, nameableThreadFactory);
+            folderCleanupService.scheduleAtFixedRate(new FolderCleanupService(basePath, lockFolderThreshold), initialDelay, period, timeUnit);
+        }
     }
     
     
@@ -180,7 +183,7 @@ public final class SystemCommandExecuterFactory {
      * @param timeUnit the time unit of the initialDelay and period parameters
      */
     public void startFolderCleanupService(long initialDelay, long period, TimeUnit timeUnit) {
-        if (folderCleanupServiceIsRunning) {
+        if (folderCleanupServiceIsRunning != null && folderCleanupServiceIsRunning) {
             return;
         }
         
@@ -189,18 +192,45 @@ public final class SystemCommandExecuterFactory {
         this.timeUnit = timeUnit;
         startFolderCleanupService();
     }
-           
+
+    
+    /**
+     * Start the folder cleanup service
+     * 
+     * @param initialDelay the time to delay first execution
+     * @param period the period between successive executions
+     * @param timeUnit the time unit of the initialDelay and period parameters
+     * @param lockFolderThreshold the lock folder threshold
+     */
+    public void startFolderCleanupService(long initialDelay, long period, TimeUnit timeUnit, long lockFolderThreshold) {
+        if (folderCleanupServiceIsRunning != null && folderCleanupServiceIsRunning) {
+            return;
+        }
+        
+        this.initialDelay = initialDelay;
+        this.period = period;
+        this.timeUnit = timeUnit;
+        this.lockFolderThreshold = lockFolderThreshold;
+        startFolderCleanupService();
+    }
+
 
     /**
      * Stop the folder cleanup service
      */
     public void stopFolderCleanupService() {
+        if (folderCleanupServiceIsRunning == null || !folderCleanupServiceIsRunning) {
+            return;
+        }
+
         try {
-            if (folderCleanupServiceIsRunning) {
-                LOG.info("Stop folder cleanup service...");
-                folderCleanupService.shutdown();
-                folderCleanupService = null;
-                folderCleanupServiceIsRunning = false;
+            synchronized (this) {
+                if (folderCleanupServiceIsRunning != null && folderCleanupServiceIsRunning) {
+                    LOG.info("Stop folder cleanup service...");
+                    folderCleanupService.shutdown();
+                    folderCleanupService = null;
+                    folderCleanupServiceIsRunning = Boolean.FALSE;
+                }
             }
         } catch (Exception e) {
             // NOP
@@ -242,7 +272,7 @@ public final class SystemCommandExecuterFactory {
             }
         }
 
-        if (folderCleanupServiceIsRunning) {
+        if (folderCleanupServiceIsRunning != null && folderCleanupServiceIsRunning) {
             stopFolderCleanupService();
             startFolderCleanupService();
         }

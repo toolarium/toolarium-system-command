@@ -89,10 +89,11 @@ public final class ProcessBuilderUtil {
      * 
      * @param systemCommandGroupList the system command group list
      * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @param scriptPath the script path
      * @return the process builder
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    public List<ProcessBuilder> createProcessBuilders(ISystemCommandGroupList systemCommandGroupList, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+    public List<ProcessBuilder> createProcessBuilders(ISystemCommandGroupList systemCommandGroupList, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport, Path scriptPath) {
         if (systemCommandGroupList == null || systemCommandGroupList.size() == 0) {
             return null;
         }
@@ -100,7 +101,7 @@ public final class ProcessBuilderUtil {
         List<ProcessBuilder> list = new ArrayList<>();
         Iterator<ISystemCommandGroup> it = systemCommandGroupList.iterator();
         while (it.hasNext()) {
-            ProcessBuilder processBuilder = createProcessBuilder(it.next(), inputSystemCommandExecuterPlatformSupport);
+            ProcessBuilder processBuilder = createProcessBuilder(it.next(), inputSystemCommandExecuterPlatformSupport, scriptPath);
             //ProcessBuilder.Redirect
             list.add(processBuilder);
         }
@@ -142,14 +143,15 @@ public final class ProcessBuilderUtil {
      * 
      * @param systemCommandGroup the system command group
      * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @param scriptPath the script path
      * @return the process builder
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    public ProcessBuilder createProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+    public ProcessBuilder createProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport, Path scriptPath) {
         validateParameters(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
 
         if (systemCommandGroup.runAsScript()) {
-            return createScriptProcessBuilder(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
+            return createScriptProcessBuilder(systemCommandGroup, inputSystemCommandExecuterPlatformSupport, scriptPath);
         } else {
             return createProcessBuilder(systemCommandGroup.iterator().next(), inputSystemCommandExecuterPlatformSupport);
         }
@@ -180,10 +182,11 @@ public final class ProcessBuilderUtil {
      * 
      * @param systemCommandGroup the system command group
      * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
+     * @param scriptPath the script path
      * @return the process builder
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    public ProcessBuilder createScriptProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport) {
+    public ProcessBuilder createScriptProcessBuilder(ISystemCommandGroup systemCommandGroup, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport, Path scriptPath) {
         validateParameters(systemCommandGroup, inputSystemCommandExecuterPlatformSupport);
         ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport = new SystemCommandExecuterPlatformSupportWrapper(inputSystemCommandExecuterPlatformSupport); 
         ISystemCommand primarySystemCommand = null;
@@ -191,7 +194,7 @@ public final class ProcessBuilderUtil {
         List<String> cmdList = new ArrayList<>();
 
         try {
-            Path file = ScriptUtil.getInstance().prepareTempPathAndScript(systemCommandGroup, systemCommandExecuterPlatformSupport);
+            Path file = ScriptUtil.getInstance().prepareTempPathAndScript(scriptPath, systemCommandGroup.getId(), systemCommandExecuterPlatformSupport);
             LOG.debug("Set script [" + file.toString() + "]");
             
             // create a temp script to run multiple commands
