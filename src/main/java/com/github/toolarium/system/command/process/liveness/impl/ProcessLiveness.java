@@ -7,7 +7,6 @@ package com.github.toolarium.system.command.process.liveness.impl;
 
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
-import com.github.toolarium.system.command.process.stream.input.ProcessInputStream;
 import java.io.BufferedInputStream;
 import java.time.Instant;
 import java.util.List;
@@ -43,11 +42,11 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
         Process process = getProcess();
 
         if (outputStream != null && process != null) {
-            this.outputStream = new ProcessStreamConsumer(new ProcessInputStream(new BufferedInputStream(process.getInputStream())), outputStream);
+            this.outputStream = new ProcessStreamConsumer(new BufferedInputStream(process.getInputStream()), outputStream);
         }
             
         if (errorStream != null && process != null) {
-            this.errorStream = new ProcessStreamConsumer(new ProcessInputStream(new BufferedInputStream(process.getErrorStream())), errorStream);
+            this.errorStream = new ProcessStreamConsumer(new BufferedInputStream(process.getErrorStream()), errorStream);
         }
         
         this.pollTimeout = pollTimeout;

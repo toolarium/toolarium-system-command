@@ -13,7 +13,8 @@ import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.TestMain;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
@@ -47,8 +48,8 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         final String sysValue = "new value";
         final int exitValue = 1;
         
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("com.github.toolarium.system.command.TestMain")
                 .inheritJre()                                                      // inherit jre
@@ -84,8 +85,8 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         final String sysValue = "new value";
         final int exitValue = 1;
         
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("com.github.toolarium.system.command.TestMain")                 // use default java
                 .environmentVariable("CLASSPATH", "build/classes/java/test")      // set classpath by environment variable
@@ -114,16 +115,16 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
      */
     @Test
     public void usageInputStream() throws InterruptedException, IOException {
-        // discard
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getEmptyStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("com.github.toolarium.system.command.TestMain")
                 .inheritJre()
                 .inheritClassPath()
                 .systemProperty(TestMain.SYSTEM_PROPERTY_READINPUT, TRUE)
             .build()
-            .runAsynchronous(ProcessInputStreamSource.DISCARD, output, errOutput); // disable input stream
+            .runAsynchronous(processInputStream, output, errOutput);               // empty / disable input stream
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
@@ -131,16 +132,15 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         assertEquals("", ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
         
         // buffer
-        output = new ProcessBufferOutputStream();
-        ProcessInputStreamSource buffer = ProcessInputStreamSource.BUFFER;         // create auffer inputstream
-        buffer.setBuffer(TEST_BUFFER);
+        processInputStream = ProcessStreamFactory.getInstance().getStandardInFromBuffer(TEST_BUFFER);
+        output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         myAsyncProcess = SystemCommandExecuterFactory.builder()
              .java("com.github.toolarium.system.command.TestMain")
                 .inheritJre()                                                      // inherit jre
                 .inheritClassPath()                                                // inherit classpath
                 .systemProperty(TestMain.SYSTEM_PROPERTY_READINPUT, TRUE)          // system property force TestMain to read from inputstream 
                 .build()
-                .runAsynchronous(buffer, output, errOutput);
+                .runAsynchronous(processInputStream, output, errOutput);           // standard in, read from bufffer
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
@@ -148,18 +148,18 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         assertEquals("", ProcessStreamUtil.getInstance().removeCR(errOutput.toString()));
 
         // file
-        output = new ProcessBufferOutputStream();
-        ProcessInputStreamSource file = ProcessInputStreamSource.FILE;             // create file as inputstream
+        output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         File inputFile = ScriptUtil.getInstance().createTempFile(new SystemCommandGroup(), "testinput.txt");
+        processInputStream = ProcessStreamFactory.getInstance().getStandardInFromFile(inputFile);
         Files.writeString(inputFile.toPath(), "input content", StandardCharsets.UTF_8, StandardOpenOption.APPEND);
-        file.setFile(inputFile);
+
         myAsyncProcess = SystemCommandExecuterFactory.builder()
              .java("com.github.toolarium.system.command.TestMain")
                 .inheritJre()                                                      // inherit jre
                 .inheritClassPath()                                                // inherit classpath
                 .systemProperty(TestMain.SYSTEM_PROPERTY_READINPUT, TRUE)        // system property force TestMain to read from inputstream 
                 .build()
-                .runAsynchronous(file, output, errOutput);
+                .runAsynchronous(processInputStream, output, errOutput);
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
@@ -182,8 +182,9 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
         final int exitValue = 1;
         
         String javaUser = "myUser";
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("com.github.toolarium.system.command.TestMain ")
                 .inheritJre()                                                      // inherit jre
@@ -196,7 +197,7 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
                 .systemProperty(TestMain.SYSTEM_PROPERTY_PRINT_VERBOSE, TRUE)
                 .parameter(param1).parameter(param2)                               // set program parameter
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput); // write output and error to defined buffer
+            .runAsynchronous(processInputStream, output, errOutput); // write output and error to defined buffer
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
@@ -214,12 +215,13 @@ public class JavaSystemCommandTest extends AbstractProcessTest {
      */
     @Test
     public void usageJavaVersion() throws InterruptedException {
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .java("-version")
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+            .runAsynchronous(processInputStream, output, errOutput);
         myAsyncProcess.waitFor();
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());

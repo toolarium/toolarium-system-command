@@ -3,7 +3,7 @@
  *
  * Copyright by toolarium, all rights reserved.
  */
-package com.github.toolarium.system.command.process.stream;
+package com.github.toolarium.system.command.process.stream.input;
 
 import java.io.File;
 

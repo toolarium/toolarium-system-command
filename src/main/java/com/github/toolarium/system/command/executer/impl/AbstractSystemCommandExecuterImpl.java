@@ -15,8 +15,10 @@ import com.github.toolarium.system.command.process.impl.AsynchronousProcess;
 import com.github.toolarium.system.command.process.impl.SynchronousProcess;
 import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.liveness.impl.ProcessLiveness;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
+import com.github.toolarium.system.command.process.stream.input.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.output.ProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
@@ -82,29 +84,19 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      */
     @Override
     public ISynchronousProcess runSynchronous(int numberOfSecondsToWait) {
-        return runSynchronous(null, numberOfSecondsToWait);
+        return runSynchronous(ProcessStreamFactory.getInstance().getStandardIn(), numberOfSecondsToWait);
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, int)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.stream.IProcessInputStream, int)
      */
     @Override
-    public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait) {
-        return runSynchronous(processInputStreamSource, numberOfSecondsToWait, DEFAULT_POLL_TIMEOUT);
-    }
-
-
-    /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runSynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, int, long)
-     */
-    @Override
-    public ISynchronousProcess runSynchronous(ProcessInputStreamSource processInputStreamSource, int numberOfSecondsToWait, long pollTimeout) {
-        
+    public ISynchronousProcess runSynchronous(IProcessInputStream processInputStream, int numberOfSecondsToWait) {
         // to capture output from the shell
-        ProcessBufferOutputStream outputstream = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errorOutputstream = new ProcessBufferOutputStream();        
-        IAsynchronousProcess asynchronousProcess = runAsynchronous(processInputStreamSource, outputstream, errorOutputstream, pollTimeout);
+        ProcessBufferOutputStream outputstream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errorOutputstream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();        
+        IAsynchronousProcess asynchronousProcess = runAsynchronous(processInputStream, outputstream, errorOutputstream, DEFAULT_POLL_TIMEOUT);
         StringBuilder processInfo = new StringBuilder(" (id:" + systemCommandGroupList.getId() + ", pid:" + asynchronousProcess.getPid());
         
         int exitValue = -1;
@@ -166,21 +158,21 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.IProcessInputStream, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
      */
     @Override
-    public IAsynchronousProcess runAsynchronous(ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr) {
-        return runAsynchronous(processInputStreamSource, processOut, processErr, DEFAULT_POLL_TIMEOUT);
+    public IAsynchronousProcess runAsynchronous(IProcessInputStream processInputStream, IProcessOutputStream processOut, IProcessOutputStream processErr) {
+        return runAsynchronous(processInputStream, processOut, processErr, DEFAULT_POLL_TIMEOUT);
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.ProcessInputStreamSource, 
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.IProcessInputStream, 
      *      com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream, long)
      */
     @Override
-    public IAsynchronousProcess runAsynchronous(ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr, long pollTimeout) {
+    public IAsynchronousProcess runAsynchronous(IProcessInputStream processInputStream, IProcessOutputStream processOut, IProcessOutputStream processErr, long pollTimeout) {
         
         // create process builder list
         IProcessLiveness processLiveness = null;
@@ -194,7 +186,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
             LOG.debug("Start command (id:" + systemCommandGroupList.getId() + ") in path [" + processBuilderList.get(0).directory().getAbsolutePath() + "]: \n" + systemCommandGroup.toString());
             
             // prepare streams
-            setProcessInputStreamSource(systemCommandGroup, processBuilderList.get(0), processInputStreamSource, processOut, processErr);
+            setProcessInputStreamSource(systemCommandGroup, processBuilderList.get(0), processInputStream, processOut, processErr);
             
             // start process
             List<java.lang.Process> processList;
@@ -257,7 +249,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
 
         if (file == null) {
             try {
-                file = ScriptUtil.getInstance().createTempFile(systemCommandGroup, "input.txt");
+                file = ScriptUtil.getInstance().createTempFile(systemCommandGroup, "processinput.dat");
             } catch (IOException e) {
                 LOG.warn("Could not create temp file: " + e.getMessage(), e);
                 return null;
@@ -274,25 +266,25 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
         }
         
         return file;
-        
     }
+
     
     /**
      * Set the process input stream source
      * 
      * @param systemCommandGroup the system command group
      * @param processBuilder the process builder
-     * @param processInputStreamSource the process input stream source
+     * @param processInputStream the process input stream
      * @param processOut the process output stream
      * @param processErr the process error stream
      */
-    protected void setProcessInputStreamSource(ISystemCommandGroup systemCommandGroup, ProcessBuilder processBuilder, ProcessInputStreamSource processInputStreamSource, IProcessOutputStream processOut, IProcessOutputStream processErr) {
-        ProcessInputStreamSource inputStreamSource = processInputStreamSource;
+    protected void setProcessInputStreamSource(ISystemCommandGroup systemCommandGroup, ProcessBuilder processBuilder, IProcessInputStream processInputStream, IProcessOutputStream processOut, IProcessOutputStream processErr) {
+        ProcessInputStreamSource inputStreamSource = processInputStream.getProcessInputStreamSource();
         if (inputStreamSource != null) {
             switch (inputStreamSource) {
                 case DISCARD:
                     LOG.debug("Discard input stream.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, processInputStreamSource)));
+                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, inputStreamSource)));
                     break;
                 case PIPE:
                     LOG.debug("Pipe input stream.");
@@ -300,11 +292,11 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
                     break;
                 case FILE:
                     LOG.debug("File input stream.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, processInputStreamSource)));
+                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, inputStreamSource)));
                     break;
                 case BUFFER:
                     LOG.debug("Read input stream from buffer.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, processInputStreamSource)));
+                    processBuilder.redirectInput(Redirect.from(writeInputFile(systemCommandGroup, inputStreamSource)));
                     break;
                 case INHERIT:
                 default:

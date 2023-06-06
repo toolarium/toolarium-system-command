@@ -5,6 +5,7 @@
  */
 package com.github.toolarium.system.command.process.stream.output;
 
+import com.github.toolarium.system.command.process.stream.IProcessStreamExceptionHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -21,6 +22,27 @@ public class ProcessBufferOutputStream extends ProcessOutputStream {
      */
     public ProcessBufferOutputStream() {
         super(new ByteArrayOutputStream());
+    }
+
+    
+    /**
+     * Constructor for ProcessBufferOutputStream
+     *
+     * @param linePrefix the prefix to add after every new line or null
+     */
+    public ProcessBufferOutputStream(String linePrefix) {
+        super(new ByteArrayOutputStream(), false, linePrefix, null);
+    }
+
+    
+    /**
+     * Constructor for ProcessBufferOutputStream
+     *
+     * @param linePrefix the prefix to add after every new line or null
+     * @param processStreamExceptionHandler the process stream exception handler
+     */
+    public ProcessBufferOutputStream(String linePrefix, IProcessStreamExceptionHandler processStreamExceptionHandler) {
+        super(new ByteArrayOutputStream(), false, linePrefix, processStreamExceptionHandler);
     }
 
     

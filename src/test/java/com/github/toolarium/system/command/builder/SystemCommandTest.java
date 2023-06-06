@@ -14,7 +14,8 @@ import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.IProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -59,12 +60,13 @@ public class SystemCommandTest extends AbstractProcessTest {
      */
     @Test
     public void usageAsync() throws InterruptedException {
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .system().command("dir")
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+            .runAsynchronous(processInputStream, output, errOutput);
         assertNotNull(myAsyncProcess.getInputStream()); // the input stream where we can bypass
         myAsyncProcess.waitFor();
         assertNotNull(myAsyncProcess);
@@ -85,10 +87,11 @@ public class SystemCommandTest extends AbstractProcessTest {
      */
     @Test
     public void usageAsyncSilent() throws InterruptedException {
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .system().command("dir")
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, null, null);
+            .runAsynchronous(processInputStream, null, null);
         myAsyncProcess.waitFor();
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());

@@ -5,10 +5,10 @@
  */
 package com.github.toolarium.system.command.process.liveness.impl;
 
-import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.IOException;
+import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProcessStreamConsumer {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessStreamConsumer.class);
-    private IProcessInputStream source;
+    private InputStream source;
     private IProcessOutputStream processOutputStream;
     private long totalBytes;
 
@@ -31,7 +31,7 @@ public class ProcessStreamConsumer {
      * @param source the input stream
      * @param processOutputStream the process output stream
      */
-    public ProcessStreamConsumer(IProcessInputStream source, IProcessOutputStream processOutputStream) {
+    public ProcessStreamConsumer(InputStream source, IProcessOutputStream processOutputStream) {
         this.source = source;
         this.processOutputStream = processOutputStream;
         this.totalBytes = 0;

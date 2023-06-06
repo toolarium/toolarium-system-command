@@ -14,7 +14,8 @@ import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
 import com.github.toolarium.system.command.process.ISynchronousProcess;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.BufferedReader;
@@ -39,15 +40,16 @@ public class DockerSystemCommandTest extends AbstractProcessTest {
     @Test
     public void usageDockerStartStop() throws InterruptedException {
         // docker run --rm --name icap-server -p 1344:1344 toolarium/toolarium-icap-calmav-docker:0.0.1
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         final IAsynchronousProcess startDockerProcess = SystemCommandExecuterFactory.builder().docker()
                 .run(TOOLARIUM_TOOLARIUM_ICAP_CALMAV_DOCKER)
                 .remove(true)
                 .name("icap-server")
                 .port(1344)
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+            .runAsynchronous(processInputStream, output, errOutput);
 
         // wait until it has started
         long maxTimeout = System.currentTimeMillis() + (10 * 1000);
@@ -88,18 +90,17 @@ public class DockerSystemCommandTest extends AbstractProcessTest {
         //final String param1 = "-param1";
         //docker run -it --rm alpine /bin/ash
         // docker run --rm --name icap-server -p 1344:1344 toolarium/toolarium-icap-calmav-docker:0.0.1
-        ProcessInputStreamSource inputBuffer = ProcessInputStreamSource.BUFFER;
-        inputBuffer.setBuffer("exit");
         
-        ProcessBufferOutputStream output = null; //new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = null; // new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardInFromBuffer("exit");
+        ProcessBufferOutputStream output = null; //ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = null; //ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess startDockerProcess = SystemCommandExecuterFactory.builder().docker()
                 .run("alpine")
                 .interactive(true)
                 .remove(true)
                 .parameter("/bin/ash")
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+            .runAsynchronous(processInputStream, output, errOutput);
         
         Thread.sleep(10 * 1000);
         startDockerProcess.waitFor();

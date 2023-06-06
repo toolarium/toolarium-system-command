@@ -13,7 +13,8 @@ import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.TestMain;
 import com.github.toolarium.system.command.Version;
 import com.github.toolarium.system.command.process.IAsynchronousProcess;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +41,9 @@ public class JarSystemCommandTest extends AbstractProcessTest {
         final String sysValue = "new value";
         final int exitValue = 1;
         
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
             .jar(TEST_JARFILE)                                                     // test jar file
                 .inheritJre()                                                      // inherit jre
@@ -52,7 +54,7 @@ public class JarSystemCommandTest extends AbstractProcessTest {
                 .systemProperty(TestMain.SYSTEM_PROPERTY_PRINT_VERBOSE, TRUE)
                 .parameter(param1).parameter(param2)                               // set program parameter
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput); // write output and error to defined buffer
+            .runAsynchronous(processInputStream, output, errOutput); // write output and error to defined buffer
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());
@@ -76,8 +78,9 @@ public class JarSystemCommandTest extends AbstractProcessTest {
         final String sysValue = "new value";
         final int exitValue = 1;
         
-        ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
         IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
              .jar(TEST_JARFILE)                                                   // test jar file
                 .environmentVariable(TestMain.ENV_KEY, envValue)                  // set an additional environment variable
@@ -86,7 +89,7 @@ public class JarSystemCommandTest extends AbstractProcessTest {
                 .systemProperty(TestMain.SYSTEM_PROPERTY_PRINT_VERBOSE, TRUE)
                 .parameter(param1).parameter(param2)
             .build()
-            .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+            .runAsynchronous(processInputStream, output, errOutput);
         myAsyncProcess.waitFor();                                                  // wait until process ends
         assertNotNull(myAsyncProcess);
         assertNotNull(myAsyncProcess.getExitValue());

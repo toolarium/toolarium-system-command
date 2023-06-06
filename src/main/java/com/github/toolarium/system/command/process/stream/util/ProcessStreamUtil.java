@@ -5,10 +5,8 @@
  */
 package com.github.toolarium.system.command.process.stream.util;
 
-import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.IProcessStreamExceptionHandler;
-import com.github.toolarium.system.command.process.stream.input.ProcessInputStream;
 import com.github.toolarium.system.command.process.stream.output.ProcessOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -88,7 +86,7 @@ public final class ProcessStreamUtil {
             prefix = linePrefix.getBytes();
         }
         
-        return pipeAvailableBytes(new ProcessInputStream(source), new ProcessOutputStream(target, quiet, prefix, failureHandler));
+        return pipeAvailableBytes(source, new ProcessOutputStream(target, quiet, prefix, failureHandler));
     }
 
     
@@ -103,7 +101,7 @@ public final class ProcessStreamUtil {
      * @return the number of piped data; -1 in case of an error
      */
     public int pipeAvailableBytes(InputStream source, OutputStream target, boolean quiet, final byte[] prefix, IProcessStreamExceptionHandler failureHandler) {
-        return pipeAvailableBytes(new ProcessInputStream(source), new ProcessOutputStream(target, quiet, String.valueOf(prefix), failureHandler));
+        return pipeAvailableBytes(source, new ProcessOutputStream(target, quiet, String.valueOf(prefix), failureHandler));
     }
 
     
@@ -114,7 +112,7 @@ public final class ProcessStreamUtil {
      * @param target the output stream
      * @return the number of piped data; -1 in case of an error
      */
-    public int pipeAvailableBytes(IProcessInputStream source, IProcessOutputStream target) {
+    public int pipeAvailableBytes(InputStream source, IProcessOutputStream target) {
         try {
             if (source == null) {
                 return -1;

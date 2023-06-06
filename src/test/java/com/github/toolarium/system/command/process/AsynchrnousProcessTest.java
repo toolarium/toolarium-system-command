@@ -11,7 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
 import com.github.toolarium.system.command.dto.SystemCommand;
-import com.github.toolarium.system.command.process.stream.ProcessInputStreamSource;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.util.OSUtil;
@@ -46,13 +47,14 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
     @Test
     public void echoAsynchrnousTest() throws InterruptedException {
         String command = "echo ok";
-        ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errorOutputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
         SystemCommandExecuterFactory.getInstance().startFolderCleanupService();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command)
                 .build()
-                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream, errorOutputStream), 
+                .runAsynchronous(processInputStream, outputStream, errorOutputStream), 
                                                                outputStream, errorOutputStream,
                                                                "ok",     // expected standard out! 
                                                                "",       // no standard error!
@@ -73,13 +75,14 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
     public void echoMultipleCommandInSameProcessTest() throws InterruptedException {  
         String command1 = "echo ok1";
         String command2 = "echo ok2";
-        ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errorOutputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command1).onSuccessOrError()
                 .system().command(command2)
                 .build()
-                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream,  errorOutputStream), 
+                .runAsynchronous(processInputStream, outputStream,  errorOutputStream), 
                                                                outputStream, errorOutputStream,
                                                                "ok1\r\nok2",  // expected standard out! 
                                                                "",       // no standard error!
@@ -124,15 +127,16 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         String command1 = "echo " + prepareGetEnvValue(KEY1, false) + SystemCommand.SPACE + prepareGetEnvValue(KEY2, false) + SystemCommand.SPACE + prepareGetEnvValue("key3", false);
         String command2 = "echo " + prepareGetEnvValue(KEY1, true) + SystemCommand.SPACE + prepareGetEnvValue(KEY2, true) + SystemCommand.SPACE + prepareGetEnvValue("key3", true);
         
-        ProcessBufferOutputStream outputStream = new ProcessBufferOutputStream();
-        ProcessBufferOutputStream errorOutputStream = new ProcessBufferOutputStream();
+        ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errorOutputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command1).workingPath("build").environmentVariable(KEY1, "myValue1").environmentVariable(KEY2, "myValue2").onSuccess()
                 .system().command(command2).workingPath("build").environmentVariable(KEY1, "myValuea").environmentVariable(KEY2, "myValueb").onError()
                 .system().command(command2).workingPath("build/classes").environmentVariable(KEY1, "myErrorValue1").environmentVariable("key3", "myErrorValue2").onSuccessOrError()
                 .system().command("echo").command(systemProperties, "-D", false, true, new LinkedHashSet<>(Arrays.asList("password")))
                 .build()
-                .runAsynchronous(ProcessInputStreamSource.INHERIT, outputStream, errorOutputStream), 
+                .runAsynchronous(processInputStream, outputStream, errorOutputStream), 
                                                                outputStream, errorOutputStream,
                                                                "myValue1 myValue2" + eps1 + "\r\nmyValuea myValueb" + eps2 + "\r\n" + qm + "-Dmyapp=the app" + qm + SystemCommand.SPACE + qm + "-Dpassword=abcd" + qm, // expected standard error!
                                                                "",       // no standard error!
