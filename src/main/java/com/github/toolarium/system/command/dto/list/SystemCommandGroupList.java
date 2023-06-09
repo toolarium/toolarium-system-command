@@ -10,6 +10,7 @@ import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,10 +24,11 @@ import java.util.Objects;
  * @author patrick
  */
 public class SystemCommandGroupList implements ISystemCommandGroupList, Serializable {
+    private static final int ONE_HOUR = 60 * 60;
     private static final long serialVersionUID = -7355466348182867999L;
     private final String id;
     private List<ISystemCommandGroup> systemCommandGroupList;
-    private boolean autoCleanupScriptPath;
+    private Instant lockTimeout;
 
     
     /**
@@ -35,7 +37,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
     public SystemCommandGroupList() {
         this.id = ProcessStreamUtil.getInstance().getId();
         this.systemCommandGroupList = new ArrayList<>();
-        this.autoCleanupScriptPath = true;
+        this.lockTimeout = null;
     }
 
     
@@ -115,24 +117,46 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
         }
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#autoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#lock()
      */
     @Override
-    public boolean autoCleanupScriptPath() {
-        return autoCleanupScriptPath;
+    public void lock() {
+        lock(ONE_HOUR);
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#disableAutoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#lock(java.lang.Integer)
      */
     @Override
-    public void disableAutoCleanupScriptPath() {
-        autoCleanupScriptPath = false;
+    public void lock(Integer lockTimeoutInSeconds) {
+        if (lockTimeoutInSeconds == null) {
+            this.lockTimeout = null;
+        } else {
+            this.lockTimeout = Instant.ofEpochMilli(Instant.now().toEpochMilli() + (1000 * lockTimeoutInSeconds));
+        }
     }
-    
+
+
+    /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#getLockTimeout()
+     */
+    @Override
+    public Instant getLockTimeout() {
+        return lockTimeout;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#isLocked()
+     */
+    @Override
+    public boolean isLocked() {
+        return lockTimeout != null && Instant.now().isAfter(lockTimeout);
+    }
+
     
     /**
      * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#newGroup()
@@ -171,7 +195,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, systemCommandGroupList, autoCleanupScriptPath);
+        return Objects.hash(id, systemCommandGroupList, lockTimeout);
     }
 
 
@@ -193,7 +217,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
         }
         
         SystemCommandGroupList other = (SystemCommandGroupList) obj;
-        return Objects.equals(id, other.id) && Objects.equals(systemCommandGroupList, other.systemCommandGroupList) && autoCleanupScriptPath == other.autoCleanupScriptPath;
+        return Objects.equals(id, other.id) && Objects.equals(systemCommandGroupList, other.systemCommandGroupList) && Objects.equals(lockTimeout, other.lockTimeout);
     }
 
 

@@ -67,7 +67,7 @@ public class StreamUtilTest {
         
         try {
             while (inputstream.available() != 0) {
-                ProcessStreamUtil.getInstance().pipeAvailableBytes(inputstream, target, false, prefix, null);
+                ProcessStreamUtil.getInstance().pipeAvailableBytes(inputstream, target, prefix, null);
             }
         } catch (IOException e) {
             // NOP

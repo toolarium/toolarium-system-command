@@ -149,6 +149,15 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
         return runAsynchronous(null, new ProcessOutputStream(System.out), new ProcessOutputStream(System.err));
     }
 
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.IProcessOutputStream)
+     */
+    @Override
+    public IAsynchronousProcess runAsynchronous(IProcessOutputStream processOutAndErr) {
+        return runAsynchronous(null, processOutAndErr, processOutAndErr, DEFAULT_POLL_TIMEOUT);
+    }
+
     
     /**
      * @see com.github.toolarium.system.command.executer.ISystemCommandExecuter#runAsynchronous(com.github.toolarium.system.command.process.stream.IProcessOutputStream, com.github.toolarium.system.command.process.stream.IProcessOutputStream)
@@ -208,7 +217,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
             }
 
             // start liveness thread
-            processLiveness = new ProcessLiveness(systemCommandGroupList.getId(), processList, processOut, processErr, scriptPath, systemCommandGroupList.autoCleanupScriptPath(), pollTimeout);
+            processLiveness = new ProcessLiveness(systemCommandGroupList.getId(), processList, processOut, processErr, scriptPath, systemCommandGroupList.getLockTimeout(), pollTimeout);
             Executors.newSingleThreadExecutor(nameableThreadFactory).execute(processLiveness);
 
             // create pid file
@@ -227,7 +236,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
             ex.setStackTrace(e.getStackTrace());
             throw ex;
         } finally {
-            if (lockFile != null && systemCommandGroupList.autoCleanupScriptPath()) {
+            if (lockFile != null && systemCommandGroupList.isLocked()) {
                 lockFile.toFile().delete();
             }
         }
@@ -337,11 +346,15 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
         if (processOut == null) {
             LOG.debug("Discard output stream.");
             processBuilder.redirectOutput(Redirect.DISCARD);
+        } else {
+            processOut.start(systemCommandGroup);
         }
 
         if (processErr == null) {
             LOG.debug("Discard error output stream.");
             processBuilder.redirectError(Redirect.DISCARD);
+        } else {
+            processErr.start(systemCommandGroup);
         }
     }
 

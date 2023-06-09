@@ -5,12 +5,15 @@
  */
 package com.github.toolarium.system.command.process.stream;
 
+import com.github.toolarium.system.command.process.stream.handler.ProcessStreamExceptionHandler;
+import com.github.toolarium.system.command.process.stream.handler.Slf4jProcessStreamExceptionHandler;
 import com.github.toolarium.system.command.process.stream.input.ProcessBufferInputStream;
 import com.github.toolarium.system.command.process.stream.input.ProcessDiscardInputStream;
 import com.github.toolarium.system.command.process.stream.input.ProcessFileInputStream;
 import com.github.toolarium.system.command.process.stream.input.ProcessStandardInInputStream;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.output.ProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.output.Slf4jProcessOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 
@@ -135,7 +138,7 @@ public final class ProcessStreamFactory {
      * @return the process output stream
      */
     public IProcessOutputStream getProcessOutputStream(OutputStream os, String linePrefix) {
-        return new ProcessOutputStream(os, false, linePrefix, null);
+        return new ProcessOutputStream(os, linePrefix, null);
     }
 
     
@@ -148,7 +151,7 @@ public final class ProcessStreamFactory {
      * @return the process output stream
      */
     public IProcessOutputStream getProcessOutputStream(OutputStream os, String linePrefix, IProcessStreamExceptionHandler processStreamExceptionHandler) {
-        return new ProcessOutputStream(os, false, linePrefix, processStreamExceptionHandler);
+        return new ProcessOutputStream(os, linePrefix, processStreamExceptionHandler);
     }
 
 
@@ -182,6 +185,16 @@ public final class ProcessStreamFactory {
      */
     public ProcessBufferOutputStream getProcessBufferOutputStream(String linePrefix, IProcessStreamExceptionHandler processStreamExceptionHandler) {
         return new ProcessBufferOutputStream(linePrefix, processStreamExceptionHandler);
+    }
+
+    
+    /**
+     * Get a process output stream buffer
+     *
+     * @return a process output stream buffer
+     */
+    public IProcessOutputStream getSlf4jProcessOutputStream() {
+        return new Slf4jProcessOutputStream();
     }
 
 
@@ -224,5 +237,35 @@ public final class ProcessStreamFactory {
      */
     public IProcessInputStream getStandardInFromFile(File file) {
         return new ProcessFileInputStream(file);
+    }
+
+
+    /**
+     * Get the standard in as process input stream
+     *
+     * @return the process input stream
+     */
+    public IProcessStreamExceptionHandler getStandardOutProcessStreamExceptionHandler() {
+        return new ProcessStreamExceptionHandler(System.out);
+    }
+
+
+    /**
+     * Get the standard in as process input stream
+     *
+     * @return the process input stream
+     */
+    public IProcessStreamExceptionHandler getStandardErrProcessStreamExceptionHandler() {
+        return new ProcessStreamExceptionHandler(System.err);
+    }
+
+
+    /**
+     * Get the standard in as process input stream
+     *
+     * @return the process input stream
+     */
+    public IProcessStreamExceptionHandler getSlf4jProcessStreamExceptionHandler() {
+        return new Slf4jProcessStreamExceptionHandler();
     }
 }

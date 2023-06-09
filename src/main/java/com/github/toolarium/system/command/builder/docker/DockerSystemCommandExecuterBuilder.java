@@ -274,12 +274,20 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock()
      */
     @Override
-    public DockerSystemCommandExecuterBuilder disableAutoCleanupScriptPath() {
-        super.disableAutoCleanupScriptPath();
-        return this;
+    public DockerSystemCommandExecuterBuilder lock() {
+        return (DockerSystemCommandExecuterBuilder)super.lock();
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock(java.lang.Integer)
+     */
+    @Override
+    public DockerSystemCommandExecuterBuilder lock(Integer lockTimeoutInSeconds) {
+        return (DockerSystemCommandExecuterBuilder)super.lock(lockTimeoutInSeconds);
     }
 
     

@@ -5,6 +5,7 @@
  */
 package com.github.toolarium.system.command.process.stream;
 
+import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.io.IOException;
  * @author patrick
  */
 public interface IProcessOutputStream extends Closeable, Flushable {
-
+       
     /**
      * Write to the stream
      * 
@@ -47,14 +48,6 @@ public interface IProcessOutputStream extends Closeable, Flushable {
 
 
     /**
-     * Verify if the stream is handled quiet
-     *
-     * @return true if it is quiet
-     */
-    boolean isQuiet();
-    
-    
-    /**
      * Get the line preifx
      *
      * @return the line preifx
@@ -68,5 +61,13 @@ public interface IProcessOutputStream extends Closeable, Flushable {
      * @return the process stream exception handler
      */
     IProcessStreamExceptionHandler getProcessStreamExceptionHandler();
+
+    
+    /**
+     * Notification of the start to execute the system command group
+     *
+     * @param systemCommandGroup the executing system command
+     */
+    void start(ISystemCommandGroup systemCommandGroup);
     
 }

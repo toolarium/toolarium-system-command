@@ -213,13 +213,23 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
         return this;
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock()
      */
     @Override
-    public ISystemCommandExecuterBuilder disableAutoCleanupScriptPath() {
-        systemCommandGroupList.disableAutoCleanupScriptPath();
+    public ISystemCommandExecuterBuilder lock() {
+        systemCommandGroupList.lock();
+        return this;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock(java.lang.Integer)
+     */
+    @Override
+    public ISystemCommandExecuterBuilder lock(Integer lockTimeoutInSeconds) {
+        systemCommandGroupList.lock(lockTimeoutInSeconds);
         return this;
     }
 

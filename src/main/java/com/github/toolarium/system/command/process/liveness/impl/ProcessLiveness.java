@@ -31,7 +31,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
     private Instant startupTime;
     private long pollTimeout;
     private Path scriptPath;
-    private boolean autoCleanupScriptPath;
+    private Instant lockTimeout;
 
     
     /**
@@ -42,7 +42,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
      * @param outputStream the output stream
      * @param errorStream the error output stream
      * @param scriptPath the script path
-     * @param autoCleanupScriptPath true to cleanup automated
+     * @param lockTimeout the lock timeout
      * @param pollTimeout the poll timeout, e.g. 10
      */
     public ProcessLiveness(String id, 
@@ -50,7 +50,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
                            final IProcessOutputStream outputStream, 
                            final IProcessOutputStream errorStream,
                            final Path scriptPath,
-                           final boolean autoCleanupScriptPath,
+                           final Instant lockTimeout,
                            long pollTimeout) {
         this.id = id;
         this.processList = processList;
@@ -65,7 +65,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
         }
         
         this.scriptPath = scriptPath;
-        this.autoCleanupScriptPath = autoCleanupScriptPath;
+        this.lockTimeout = lockTimeout;
         this.pollTimeout = pollTimeout;
         this.isAlive = true;
         if (process == null || process.info() == null || process.info().startInstant().isEmpty()) {
@@ -115,7 +115,7 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             LOG.info("Process ended (id:" + id + ", pid:" + process.pid() + ")");
         }
         
-        if (autoCleanupScriptPath && scriptPath != null && scriptPath.toFile().exists()) {
+        if ((lockTimeout == null || Instant.now().isAfter(lockTimeout)) && scriptPath != null && scriptPath.toFile().exists()) {
             LOG.debug("Delete script path [" + scriptPath + "]...");
             ProcessStreamUtil.getInstance().deleteDirectory(scriptPath);
         }
@@ -193,13 +193,13 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
         return null;
     }
     
-    
+
     /**
-     * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#autoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.process.liveness.IProcessLiveness#getLockTimeout()
      */
     @Override
-    public boolean autoCleanupScriptPath() {
-        return autoCleanupScriptPath;
+    public Instant getLockTimeout() {
+        return lockTimeout;
     }
 
 
@@ -219,6 +219,6 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
     public String toString() {
         return "ProcessLiveness [startupTime=" + startupTime + ", isAlive=" + isAlive() + ", pid=" + getProcessId() +  " (" + processList + ")"
                 + ", outputStream=" + outputStream + ", errorStream=" + errorStream + ", pollTimeout=" + pollTimeout
-                + ", scriptPath=" + scriptPath + ", autoCleanupScriptPath=" + autoCleanupScriptPath + "]";
+                + ", scriptPath=" + scriptPath + ", lockTimeout=" + lockTimeout + "]";
     }
 }

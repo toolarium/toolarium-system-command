@@ -220,8 +220,8 @@ public class AsynchronousProcess extends AbstractProcess implements IAsynchronou
                 // NOP
             }
         }
-
-        if (processLiveness.autoCleanupScriptPath()) {
+        
+        if ((processLiveness.getLockTimeout() == null || Instant.now().isAfter(processLiveness.getLockTimeout()))) {
             Path scriptPath = processLiveness.getScriptPath();
             if (scriptPath != null && scriptPath.toFile().exists()) {
                 LOG.debug("Delete script path [" + scriptPath + "]...");

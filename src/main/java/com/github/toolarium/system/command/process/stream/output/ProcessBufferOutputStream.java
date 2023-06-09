@@ -31,7 +31,7 @@ public class ProcessBufferOutputStream extends ProcessOutputStream {
      * @param linePrefix the prefix to add after every new line or null
      */
     public ProcessBufferOutputStream(String linePrefix) {
-        super(new ByteArrayOutputStream(), false, linePrefix, null);
+        super(new ByteArrayOutputStream(), linePrefix, null);
     }
 
     
@@ -42,7 +42,7 @@ public class ProcessBufferOutputStream extends ProcessOutputStream {
      * @param processStreamExceptionHandler the process stream exception handler
      */
     public ProcessBufferOutputStream(String linePrefix, IProcessStreamExceptionHandler processStreamExceptionHandler) {
-        super(new ByteArrayOutputStream(), false, linePrefix, processStreamExceptionHandler);
+        super(new ByteArrayOutputStream(), linePrefix, processStreamExceptionHandler);
     }
 
     

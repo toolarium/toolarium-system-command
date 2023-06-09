@@ -122,11 +122,20 @@ public interface ISystemCommandExecuterBuilder {
 
     
     /**
-     * Disable auto cleanup script path.
+     * Lock the current system command group list (default timeout).
      * 
      * @return the system command executer builder
      */
-    ISystemCommandExecuterBuilder disableAutoCleanupScriptPath();
+    ISystemCommandExecuterBuilder lock();
+
+    
+    /**
+     * Lock the current system command group list.
+     *
+     * @param lockTimeoutInSeconds the period in seconds
+     * @return the system command executer builder
+     */
+    ISystemCommandExecuterBuilder lock(Integer lockTimeoutInSeconds);
 
    
     /**

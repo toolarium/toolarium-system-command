@@ -166,12 +166,20 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock()
      */
     @Override
-    public SystemCommandExecuterBuilder disableAutoCleanupScriptPath() {
-        super.disableAutoCleanupScriptPath();
-        return this;
+    public SystemCommandExecuterBuilder lock() {
+        return (SystemCommandExecuterBuilder)super.lock();
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock(java.lang.Integer)
+     */
+    @Override
+    public SystemCommandExecuterBuilder lock(Integer lockTimeoutInSeconds) {
+        return (SystemCommandExecuterBuilder)super.lock(lockTimeoutInSeconds);
     }
 
     

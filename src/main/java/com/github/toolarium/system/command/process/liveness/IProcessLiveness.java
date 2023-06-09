@@ -56,11 +56,11 @@ public interface IProcessLiveness extends Runnable {
 
     
     /**
-     * Cleanup the script path after process end
+     * Get the lock timeout
      *
-     * @return true to cleanup automated
+     * @return the lock timeout
      */
-    boolean autoCleanupScriptPath();
+    Instant getLockTimeout();
 
     
     /**

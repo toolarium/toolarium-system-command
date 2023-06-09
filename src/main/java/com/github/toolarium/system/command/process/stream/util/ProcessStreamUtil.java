@@ -78,18 +78,17 @@ public final class ProcessStreamUtil {
      *
      * @param source the input stream
      * @param target the output stream
-     * @param quiet true to suppress the output
      * @param linePrefix the prefix to add after every new line or null
      * @param failureHandler the failure handler
      * @return the number of piped data; -1 in case of an error
      */
-    public int pipeAvailableBytes(InputStream source, OutputStream target, boolean quiet, final String linePrefix, IProcessStreamExceptionHandler failureHandler) {
+    public int pipeAvailableBytes(InputStream source, OutputStream target, final String linePrefix, IProcessStreamExceptionHandler failureHandler) {
         byte[] prefix = null;
         if (linePrefix != null && !linePrefix.isEmpty()) {
             prefix = linePrefix.getBytes();
         }
         
-        return pipeAvailableBytes(source, new ProcessOutputStream(target, quiet, prefix, failureHandler));
+        return pipeAvailableBytes(source, new ProcessOutputStream(target, prefix, failureHandler));
     }
 
     
@@ -98,13 +97,12 @@ public final class ProcessStreamUtil {
      *
      * @param source the input stream
      * @param target the output stream
-     * @param quiet true to suppress the output
      * @param prefix the prefix to add after every new line or null
      * @param failureHandler the failure handler
      * @return the number of piped data; -1 in case of an error
      */
-    public int pipeAvailableBytes(InputStream source, OutputStream target, boolean quiet, final byte[] prefix, IProcessStreamExceptionHandler failureHandler) {
-        return pipeAvailableBytes(source, new ProcessOutputStream(target, quiet, String.valueOf(prefix), failureHandler));
+    public int pipeAvailableBytes(InputStream source, OutputStream target, final byte[] prefix, IProcessStreamExceptionHandler failureHandler) {
+        return pipeAvailableBytes(source, new ProcessOutputStream(target, String.valueOf(prefix), failureHandler));
     }
 
     
@@ -124,7 +122,7 @@ public final class ProcessStreamUtil {
             byte[] buffer = new byte[Math.max(10, source.available())];
             int length = source.read(buffer);
             
-            if (target != null && !target.isQuiet()) {
+            if (target != null) {
                 target.write(insertPrefix(buffer, length, target.getLinePrefix()));
                 target.flush();
                 return length;

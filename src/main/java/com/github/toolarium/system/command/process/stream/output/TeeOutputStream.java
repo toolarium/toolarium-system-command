@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 
 /**
- * OUtput stream which splits the output named after the unix 'tee' command. It allows a stream to be branched off
+ * Output stream which splits the output named after the unix 'tee' command. It allows a stream to be branched off
  * so there are now two streams.
  * 
  * @author patrick

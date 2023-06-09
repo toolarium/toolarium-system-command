@@ -320,12 +320,20 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#disableAutoCleanupScriptPath()
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock()
      */
     @Override
-    public AbstractJavaSystemCommandExecuteBuilder disableAutoCleanupScriptPath() {
-        super.disableAutoCleanupScriptPath();
-        return this;
+    public AbstractJavaSystemCommandExecuteBuilder lock() {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.lock();
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder#lock(java.lang.Integer)
+     */
+    @Override
+    public AbstractJavaSystemCommandExecuteBuilder lock(Integer lockTimeoutInSeconds) {
+        return (AbstractJavaSystemCommandExecuteBuilder)super.lock(lockTimeoutInSeconds);
     }
 
 

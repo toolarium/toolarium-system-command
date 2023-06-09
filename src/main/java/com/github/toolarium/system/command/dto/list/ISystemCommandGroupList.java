@@ -7,6 +7,7 @@ package com.github.toolarium.system.command.dto.list;
 
 import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,18 +69,34 @@ public interface ISystemCommandGroupList {
 
     
     /**
-     * Cleanup script path automated.
-     *
-     * @return true to cleanup
+     * Lock the system command group list (default timeout).
      */
-    boolean autoCleanupScriptPath();
+    void lock();
 
     
     /**
-     * Disable auto cleanup script path.
+     * Lock the system command group list.
+     *
+     * @param lockTimeoutInSeconds the period in seconds
      */
-    void disableAutoCleanupScriptPath();
+    void lock(Integer lockTimeoutInSeconds);
 
+    
+    /**
+     * Check if the system command group list locked or not
+     *
+     * @return the lock timeout in seconds
+     */
+    boolean isLocked();
+    
+    
+    /**
+     * Get the lock timeout
+     *
+     * @return the lock timeout
+     */
+    Instant getLockTimeout();
+    
     
     /**
      * Start a new system command group

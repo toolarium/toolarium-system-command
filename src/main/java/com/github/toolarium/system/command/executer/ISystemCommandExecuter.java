@@ -57,6 +57,15 @@ public interface ISystemCommandExecuter {
     /**
      * Start a new command asynchronous process. You will get back the started process.
      * 
+     * @param processOutAndErr the process output and error stream
+     * @return the asynchronous process which is already started
+     */
+    IAsynchronousProcess runAsynchronous(IProcessOutputStream processOutAndErr);
+
+    
+    /**
+     * Start a new command asynchronous process. You will get back the started process.
+     * 
      * @param processOut the process output stream
      * @param processErr the process error stream
      * @return the asynchronous process which is already started

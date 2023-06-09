@@ -7,6 +7,7 @@ package com.github.toolarium.system.command.process;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.toolarium.system.command.AbstractProcessTest;
 import com.github.toolarium.system.command.SystemCommandExecuterFactory;
@@ -14,6 +15,8 @@ import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
+import com.github.toolarium.system.command.process.stream.output.Slf4jProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.output.TeeProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.util.OSUtil;
 import java.io.File;
@@ -26,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 
 /**
@@ -54,15 +58,43 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
                 .system().command(command)
                 .build()
                 .runAsynchronous(processInputStream, outputStream, errorOutputStream), 
-                                                               outputStream, errorOutputStream,
-                                                               "ok",     // expected standard out! 
-                                                               "",       // no standard error!
-                                                               null,     // default working path  
-                                                               null,     // no environment 
-                                                               0,        // return value
-                                                               command); // command
+                                 outputStream, errorOutputStream,
+                                 "ok",     // expected standard out! 
+                                 "",       // no standard error!
+                                 null,     // default working path  
+                                 null,     // no environment 
+                                 0,        // return value
+                                 command); // command
         
         assertNotNull(process);
+    }
+
+    
+    /**
+     * Test slf4j
+     * 
+     * @throws InterruptedException in case of thread interrupt
+     */
+    @Test
+    public void testSlf4j() throws InterruptedException {
+        ProcessBufferOutputStream outputStream = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
+                .system()
+                .command("dir")
+                .build()
+                .runAsynchronous(new TeeProcessOutputStream(new Slf4jProcessOutputStream(Level.INFO, "->"), outputStream), new Slf4jProcessOutputStream(Level.INFO, ":>")),
+                                 outputStream, null,
+                                 null, // expected standard out! 
+                                 null,       // no standard error!
+                                 null,     // default working path  
+                                 null,     // no environment 
+                                 0,        // return value
+                                 "dir"); // command
+                
+        assertTrue(outputStream.toString().length() > 1000);
+        assertNotNull(process);
+        process.waitFor();
+        
     }
 
     
@@ -83,7 +115,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         IAsynchronousProcess process = assertAsynchroneProcess(SystemCommandExecuterFactory.builder()
                 .system().command(command1).onSuccessOrError()
                 .system().command(command2)
-                .disableAutoCleanupScriptPath()
+                .lock()
                 .build()
                 .runAsynchronous(processInputStream, outputStream,  errorOutputStream), 
                                                                outputStream, errorOutputStream,
@@ -203,7 +235,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
         }
 
         String expectedErrorOutput = errorOutput;
-        if (errorOutput != null) {
+        if (errorOutput != null && errorOutputStream != null) {
             expectedErrorOutput = ProcessStreamUtil.getInstance().removeCR(errorOutput);
             
             if (!expectedErrorOutput.isEmpty()) {
