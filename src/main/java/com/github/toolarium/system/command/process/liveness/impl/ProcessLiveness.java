@@ -169,14 +169,6 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
             return null;
         }
         
-        if (processList.size() > 1) {
-            for (Process process : processList) {
-                if (process.isAlive()) {
-                    return process;
-                }
-            }
-        }
-        
         return processList.get(processList.size() - 1);
     }
 

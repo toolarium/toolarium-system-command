@@ -11,8 +11,13 @@ import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport;
 import com.github.toolarium.system.command.executer.impl.SystemCommandExecuterPlatformSupportWrapper;
 import com.github.toolarium.system.command.process.IProcess;
+import com.github.toolarium.system.command.process.stream.IProcessInputStream;
+import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
+import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
+import com.github.toolarium.system.command.process.stream.input.ProcessInputStreamSource;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +37,10 @@ import org.slf4j.LoggerFactory;
  * @author patrick
  */
 public final class ProcessBuilderUtil {
-    
     /** TEMP Environment variable */
     public static final String TEMP = "TOOLARIUM_TEMP";
-
+    
+    private static final String DOT = ".";
     private static final Logger LOG = LoggerFactory.getLogger(ProcessBuilderUtil.class);
     
     
@@ -88,12 +93,20 @@ public final class ProcessBuilderUtil {
      * Create a process builder list
      * 
      * @param systemCommandGroupList the system command group list
+     * @param processInputStream the process input stream
+     * @param processOut the process output stream
+     * @param processErr the process error stream
      * @param inputSystemCommandExecuterPlatformSupport the system command executer platform support
      * @param scriptPath the script path
      * @return the process builder
      * @throws IllegalArgumentException In case of invalid parameters
      */
-    public List<ProcessBuilder> createProcessBuilders(ISystemCommandGroupList systemCommandGroupList, ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport, Path scriptPath) {
+    public List<ProcessBuilder> createProcessBuilders(ISystemCommandGroupList systemCommandGroupList, 
+                                                      IProcessInputStream processInputStream, 
+                                                      IProcessOutputStream processOut, 
+                                                      IProcessOutputStream processErr, 
+                                                      ISystemCommandExecuterPlatformSupport inputSystemCommandExecuterPlatformSupport, 
+                                                      Path scriptPath) {
         if (systemCommandGroupList == null || systemCommandGroupList.size() == 0) {
             return null;
         }
@@ -101,8 +114,36 @@ public final class ProcessBuilderUtil {
         List<ProcessBuilder> list = new ArrayList<>();
         Iterator<ISystemCommandGroup> it = systemCommandGroupList.iterator();
         while (it.hasNext()) {
-            ProcessBuilder processBuilder = createProcessBuilder(it.next(), inputSystemCommandExecuterPlatformSupport, scriptPath);
-            //ProcessBuilder.Redirect
+            ISystemCommandGroup systemCommandGroup = it.next();
+            ProcessBuilder processBuilder = createProcessBuilder(systemCommandGroup, inputSystemCommandExecuterPlatformSupport, scriptPath);
+
+            // prepare streams
+            if (systemCommandGroupList.size() == 1) {
+                prepareProcessInputStream(systemCommandGroup, processBuilder, processInputStream, scriptPath, inputSystemCommandExecuterPlatformSupport);
+                prepareProcessOutputStream(systemCommandGroup, processBuilder, processOut);
+                prepareProcessErrorStream(systemCommandGroup, processBuilder, processErr);
+            } else {
+                if (list.size() == 0) {
+                    prepareProcessInputStream(systemCommandGroup, processBuilder, processInputStream, scriptPath, inputSystemCommandExecuterPlatformSupport);
+                    LOG.debug("Redirect standard output and error to pipe for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectOutput(Redirect.PIPE);
+                    processBuilder.redirectError(Redirect.PIPE);
+                } else {
+                    LOG.debug("Redirect input to pipe for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.PIPE);
+                    
+                    if (list.size() < (systemCommandGroupList.size() - 1)) {
+                        LOG.debug("Redirect standard output and error to pipe for process #" + systemCommandGroup.getId() + DOT);
+                        processBuilder.redirectOutput(Redirect.PIPE);
+                        processBuilder.redirectError(Redirect.PIPE);
+                    } else {
+                        prepareProcessOutputStream(systemCommandGroup, processBuilder, processOut);
+                        prepareProcessErrorStream(systemCommandGroup, processBuilder, processErr);
+                    }
+                }
+            }
+
+            LOG.debug("Prepared command (id:" + systemCommandGroup.getId() + ") to run in path [" + processBuilder.directory().getAbsolutePath() + "]: \n" + systemCommandGroup.toString());
             list.add(processBuilder);
         }
         
@@ -210,7 +251,7 @@ public final class ProcessBuilderUtil {
                     primarySystemCommand = systemCommand;
                     cmdList.addAll(createCommandLine(primarySystemCommand, systemCommandExecuterPlatformSupport, Arrays.asList(file.toString())));
                     currentEnvironmentMap = primarySystemCommand.getProcessEnvironment().getEnvironmentVariables();
-                    currentEnvironmentMap.put("TOOLARIUM_TEMP", file.getParent().toString());
+                    currentEnvironmentMap.put(ProcessBuilderUtil.TEMP, file.getParent().toString());
                     currentWorkingPath = primarySystemCommand.getProcessEnvironment().getWorkingPath();
                 }
 
@@ -227,7 +268,7 @@ public final class ProcessBuilderUtil {
                 // TODO: relative path new File(base).toURI().relativize(new File(path).toURI()).getPath();
                 
                 if (newWorkingPath != null && !currentWorkingPath.equals(newWorkingPath)) {
-                    LOG.debug("Set in script working path to [" + newWorkingPath + "].");
+                    LOG.debug("Set in script working path to [" + newWorkingPath + "]. ");
                     systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getEnvironmentChangeDirectoryCommand() + newWorkingPath + systemCommandExecuterPlatformSupport.getEndOfLine());
                     currentWorkingPath = newWorkingPath;
                 } else {
@@ -422,7 +463,7 @@ public final class ProcessBuilderUtil {
      */
     private void setWorkingPath(ISystemCommand systemCommand, ProcessBuilder builder) {
         final String workingPath = systemCommand.getProcessEnvironment().getWorkingPath();
-        LOG.debug("Use script working path to [" + workingPath + "].");
+        LOG.debug("Use working path [" + workingPath + "].");
         builder.directory(new File(workingPath));
     }
 
@@ -443,5 +484,127 @@ public final class ProcessBuilderUtil {
                 builder.environment().put(e.getKey(), e.getValue());
             }
         }
+    }
+
+
+    /**
+     * Prepare the process streams
+     * 
+     * @param basePath the base path
+     * @param systemCommandGroup the system command group
+     * @param processBuilder the process builder
+     * @param processInputStream the process input stream
+     * @param systemCommandExecuterPlatformSupport the system command executer platform support
+     */
+    private void prepareProcessInputStream(ISystemCommandGroup systemCommandGroup, 
+                                           ProcessBuilder processBuilder, 
+                                           IProcessInputStream processInputStream, 
+                                           Path basePath, 
+                                           ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) {
+        ProcessInputStreamSource inputStreamSource;
+        if (processInputStream == null) {
+            inputStreamSource = ProcessStreamFactory.getInstance().getStandardIn().getProcessInputStreamSource();
+        } else {
+            inputStreamSource = processInputStream.getProcessInputStreamSource();
+        }
+
+        if (inputStreamSource != null) {
+            switch (inputStreamSource) {
+                case DISCARD:
+                    LOG.debug("Discard input stream for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.from(writeInputFile(basePath, systemCommandGroup, inputStreamSource, systemCommandExecuterPlatformSupport)));
+                    break;
+                case PIPE:
+                    LOG.debug("Pipe input stream for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.PIPE);
+                    break;
+                case FILE:
+                    File file = writeInputFile(basePath, systemCommandGroup, inputStreamSource, systemCommandExecuterPlatformSupport);
+                    LOG.debug("Read input stream from file [" + file + "] for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.from(file));
+                    break;
+                case BUFFER:
+                    LOG.debug("Read input stream from buffer for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.from(writeInputFile(basePath, systemCommandGroup, inputStreamSource, systemCommandExecuterPlatformSupport)));
+                    break;
+                case INHERIT:
+                default:
+                    LOG.debug("Inherit input stream for process #" + systemCommandGroup.getId() + DOT);
+                    processBuilder.redirectInput(Redirect.INHERIT);
+                    break;
+            }
+        }
+    }
+
+    
+    /**
+     * Prepare the process output stream
+     * 
+     * @param systemCommandGroup the system command group
+     * @param processBuilder the process builder
+     * @param processOut the process output stream
+     */
+    private void prepareProcessOutputStream(ISystemCommandGroup systemCommandGroup, ProcessBuilder processBuilder, IProcessOutputStream processOut) {
+        if (processOut == null) {
+            LOG.debug("Discard output stream.");
+            processBuilder.redirectOutput(Redirect.DISCARD);
+        } else {
+            processOut.start(systemCommandGroup);
+        }
+    }
+
+    
+    /**
+     * Prepare the process error stream
+     * 
+     * @param systemCommandGroup the system command group
+     * @param processBuilder the process builder
+     * @param processErr the process error stream
+     */
+    private void prepareProcessErrorStream(ISystemCommandGroup systemCommandGroup, ProcessBuilder processBuilder, IProcessOutputStream processErr) {
+        if (processErr == null) {
+            LOG.debug("Discard error output stream.");
+            processBuilder.redirectError(Redirect.DISCARD);
+        } else {
+            processErr.start(systemCommandGroup);
+        }
+    }
+
+
+    /**
+     * Write the input file
+     * 
+     * @param systemCommandGroup the system command group
+     * @param basePath the base path
+     * @param processInputStreamSource the process input stream source
+     * @param systemCommandExecuterPlatformSupport the system command executer platform support
+     * @return the file
+     */
+    private File writeInputFile(Path basePath, ISystemCommandGroup systemCommandGroup, ProcessInputStreamSource processInputStreamSource, ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport) {
+        final String buffer = processInputStreamSource.getBuffer();
+        File file = processInputStreamSource.getFile();
+        if (file == null && buffer == null) {
+            return null;
+        }
+
+        if (file == null) {
+            try {
+                file = ScriptUtil.getInstance().createTempFile(basePath, systemCommandGroup.getId() + ".input");
+            } catch (IOException e) {
+                LOG.warn("Could not create temp file: " + e.getMessage(), e);
+                return null;
+            }
+        }
+
+        LOG.debug("Create input stream from " + file + "].");
+        if (buffer != null && !buffer.isEmpty()) {
+            try {
+                systemCommandExecuterPlatformSupport.writeToFile(file.toPath(), buffer);
+            } catch (IOException e) {
+                LOG.warn("Could not write temp file content: " + e.getMessage(), e);
+            }
+        }
+
+        return file;
     }
 }

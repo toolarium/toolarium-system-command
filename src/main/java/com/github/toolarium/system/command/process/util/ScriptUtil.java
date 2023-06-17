@@ -30,9 +30,6 @@ public final class ScriptUtil {
     /** The process lock filename */
     public static final String PROCESS_LOCK_FILENAME = ".lock";
 
-    /** TEMP Environment variable */
-    public static final String TEMPs = "TOOLARIUM_TEMP";
-
     private static final Logger LOG = LoggerFactory.getLogger(ScriptUtil.class);
     
     

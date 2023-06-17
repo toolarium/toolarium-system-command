@@ -10,6 +10,7 @@ import com.github.toolarium.system.command.builder.ISystemCommandExecuterBuilder
 import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBuilder;
 import com.github.toolarium.system.command.dto.ISystemCommand.SystemCommandExecutionStatusResult;
 import com.github.toolarium.system.command.dto.SystemCommand;
+import com.github.toolarium.system.command.dto.env.IProcessEnvironment;
 import com.github.toolarium.system.command.dto.env.ProcessEnvironment;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
@@ -17,7 +18,7 @@ import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
 import com.github.toolarium.system.command.util.SystemCommandFactory;
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +32,8 @@ import java.util.Set;
 public abstract class AbstractCommandExecuterBuilder implements ISystemCommandExecuterBuilder {
     private ISystemCommandGroupList systemCommandGroupList;
     private SystemCommand currentSystemCommand;
+    private IProcessEnvironment parentProcessEnvironment;
+    private List<String> parentShell;
     
 
     /**
@@ -41,6 +44,9 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
     public AbstractCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
         this.systemCommandGroupList = systemCommandGroupList;
         this.currentSystemCommand = null;
+        this.parentProcessEnvironment = null;
+        this.parentShell = null;
+
     }
 
     
@@ -274,7 +280,7 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
         return Objects.equals(systemCommandGroupList, other.systemCommandGroupList);
     }
 
-    // TODO: rename
+    
     /**
      * Build the java command
      * @param systemCommandGroupList  the 
@@ -291,7 +297,16 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      */
     protected SystemCommand getSystemCommand() {
         if (currentSystemCommand == null) {
-            currentSystemCommand = new SystemCommand();
+            if (parentProcessEnvironment != null) {
+                currentSystemCommand = new SystemCommand(parentProcessEnvironment);
+            } else {
+                currentSystemCommand = new SystemCommand();
+            }
+
+            if (parentShell != null) {
+                currentSystemCommand.setShell(parentShell);
+            }
+
             systemCommandGroupList.add(currentSystemCommand);
         }
         return currentSystemCommand;
@@ -326,17 +341,18 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      * @return the system command executer builder
      */
     protected ISystemCommandExecuterTypeBuilder addSystemCommandGroup() {
-        // TODO:
-        ProcessEnvironment newProcessEnvironment = new ProcessEnvironment();
-        SystemCommand newSystemCommand = new SystemCommand(newProcessEnvironment);
-        SystemCommand systemCommand = getSystemCommand();
-        newSystemCommand.setShell(systemCommand.getShell());
-        newProcessEnvironment.setWorkingPath(systemCommand.getProcessEnvironment().getWorkingPath());
-        newProcessEnvironment.setEnvironmentVariables(new HashMap<>(systemCommand.getProcessEnvironment().getEnvironmentVariables()));
+        if (currentSystemCommand != null) {
+            if (currentSystemCommand.getProcessEnvironment() != null) {
+                parentProcessEnvironment = currentSystemCommand.getProcessEnvironment();
+            }
+            
+            if (currentSystemCommand.getShell() != null) {
+                parentShell = currentSystemCommand.getShell();
+            }
+        }
         
         systemCommandGroupList.add(new SystemCommandGroup());
-        systemCommandGroupList.add(newSystemCommand);
-        
+        currentSystemCommand = null;
         return new SystemCommandExecuterTypeBuilder(systemCommandGroupList);
     }
 }

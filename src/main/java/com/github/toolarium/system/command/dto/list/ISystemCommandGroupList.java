@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * The system command group list is used to handle the case to group individual {@link ISystemCommandGroup}s. 
- * To offer the possibility to pipe {@link ISystemCommandGroup}  this abstraction is needed.
+ * To offer the possibility to pipe {@link ISystemCommandGroup} this abstraction is needed.
  * 
  * @author patrick
  */
@@ -77,7 +77,7 @@ public interface ISystemCommandGroupList {
     /**
      * Lock the system command group list.
      *
-     * @param lockTimeoutInSeconds the period in seconds
+     * @param lockTimeoutInSeconds the period in seconds. In case of null the duration will be reset with value of last lock timeout.
      */
     void lock(Integer lockTimeoutInSeconds);
 

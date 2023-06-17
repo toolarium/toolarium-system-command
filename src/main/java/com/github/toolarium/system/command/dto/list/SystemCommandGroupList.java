@@ -28,6 +28,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
     private static final long serialVersionUID = -7355466348182867999L;
     private final String id;
     private List<ISystemCommandGroup> systemCommandGroupList;
+    private int lockTimeoutInSeconds;
     private Instant lockTimeout;
 
     
@@ -37,6 +38,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
     public SystemCommandGroupList() {
         this.id = ProcessStreamUtil.getInstance().getId();
         this.systemCommandGroupList = new ArrayList<>();
+        this.lockTimeoutInSeconds = ONE_HOUR;
         this.lockTimeout = null;
     }
 
@@ -71,7 +73,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
         } else {
             systemCommandGroup = systemCommandGroupList.get(systemCommandGroupList.size() - 1);
         }
-        
+
         for (ISystemCommand s : systemCommands) {
             systemCommandGroup.add(s);
         }
@@ -123,7 +125,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
      */
     @Override
     public void lock() {
-        lock(ONE_HOUR);
+        lock(lockTimeoutInSeconds);
     }
 
 
@@ -135,8 +137,10 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
         if (lockTimeoutInSeconds == null) {
             this.lockTimeout = null;
         } else {
-            this.lockTimeout = Instant.ofEpochMilli(Instant.now().toEpochMilli() + (1000 * lockTimeoutInSeconds));
+            this.lockTimeoutInSeconds = lockTimeoutInSeconds;
         }
+        
+        this.lockTimeout = Instant.ofEpochMilli(Instant.now().toEpochMilli() + (1000 * this.lockTimeoutInSeconds));
     }
 
 

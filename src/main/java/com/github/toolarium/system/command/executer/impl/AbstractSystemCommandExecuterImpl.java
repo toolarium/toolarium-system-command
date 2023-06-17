@@ -19,22 +19,20 @@ import com.github.toolarium.system.command.process.liveness.impl.ProcessLiveness
 import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
-import com.github.toolarium.system.command.process.stream.input.ProcessInputStreamSource;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.process.stream.output.ProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import com.github.toolarium.system.command.process.thread.NameableThreadFactory;
 import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import com.github.toolarium.system.command.process.util.ScriptUtil;
-import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -197,17 +195,11 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
             }
 
             // create process builder list
-            List<ProcessBuilder> processBuilderList = ProcessBuilderUtil.getInstance().createProcessBuilders(systemCommandGroupList, this, scriptPath);
+            List<ProcessBuilder> processBuilderList = ProcessBuilderUtil.getInstance().createProcessBuilders(systemCommandGroupList, processInputStream, processOut, processErr, this, scriptPath);
             if (processBuilderList.size() == 0) {
-                throw new IllegalStateException("");
+                throw new IllegalStateException("Invalid empty process builder list!");
             }
    
-            ISystemCommandGroup systemCommandGroup = systemCommandGroupList.iterator().next();
-            LOG.debug("Start command (id:" + systemCommandGroupList.getId() + ") in path [" + processBuilderList.get(0).directory().getAbsolutePath() + "]: \n" + systemCommandGroup.toString());
-
-            // prepare streams
-            prepareProcessStreams(scriptPath, systemCommandGroup, processBuilderList.get(0), processInputStream, processOut, processErr);
-
             // start process
             List<java.lang.Process> processList;
             if (processBuilderList.size() == 1) {
@@ -216,13 +208,21 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
                 processList = ProcessBuilder.startPipeline(processBuilderList);
             }
 
+            // restart lock from now
+            systemCommandGroupList.lock(null);
+
             // start liveness thread
             processLiveness = new ProcessLiveness(systemCommandGroupList.getId(), processList, processOut, processErr, scriptPath, systemCommandGroupList.getLockTimeout(), pollTimeout);
             Executors.newSingleThreadExecutor(nameableThreadFactory).execute(processLiveness);
 
-            // create pid file
-            if (systemCommandGroup.runAsScript()) {
-                ScriptUtil.getInstance().createPidFile(scriptPath, systemCommandGroup.getId(), processLiveness.getProcessId());
+            int processCount = 0;
+            Iterator<ISystemCommandGroup> it = systemCommandGroupList.iterator();
+            while (it.hasNext()) {
+                ISystemCommandGroup systemCommandGroup = it.next();
+                // create pid file
+                if (systemCommandGroup.runAsScript() && processList.size() > processCount) {
+                    ScriptUtil.getInstance().createPidFile(scriptPath, systemCommandGroup.getId(), processList.get(processCount++).pid());
+                }
             }
 
             if (scriptPath != null) {
@@ -255,107 +255,6 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
         }
 
         Files.writeString(file, content, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
-    }
-
-    
-    /**
-     * Write the input file
-     * 
-     * @param systemCommandGroup the system command group
-     * @param basePath the base path
-     * @param processInputStreamSource the process input stream source
-     * @return the file
-     */
-    protected File writeInputFile(Path basePath, ISystemCommandGroup systemCommandGroup, ProcessInputStreamSource processInputStreamSource) {
-        final String buffer = processInputStreamSource.getBuffer();
-        File file = processInputStreamSource.getFile();
-        if (file == null && buffer == null) {
-            return null;
-        }
-
-        if (file == null) {
-            try {
-                file = ScriptUtil.getInstance().createTempFile(basePath, systemCommandGroup.getId() + ".input");
-            } catch (IOException e) {
-                LOG.warn("Could not create temp file: " + e.getMessage(), e);
-                return null;
-            }
-        }
-
-        LOG.debug("Create input stream from " + file + "].");
-        if (buffer != null && !buffer.isEmpty()) {
-            try {
-                writeToFile(file.toPath(), buffer);
-            } catch (IOException e) {
-                LOG.warn("Could not write temp file content: " + e.getMessage(), e);
-            }
-        }
-
-        return file;
-    }
-
-    
-    /**
-     * Prepare the process streams
-     * 
-     * @param basePath the base path
-     * @param systemCommandGroup the system command group
-     * @param processBuilder the process builder
-     * @param processInputStream the process input stream
-     * @param processOut the process output stream
-     * @param processErr the process error stream
-     */
-    protected void prepareProcessStreams(Path basePath, ISystemCommandGroup systemCommandGroup, 
-                                         ProcessBuilder processBuilder, 
-                                         IProcessInputStream processInputStream, 
-                                         IProcessOutputStream processOut, 
-                                         IProcessOutputStream processErr) {
-        ProcessInputStreamSource inputStreamSource;
-        if (processInputStream == null) {
-            inputStreamSource = ProcessStreamFactory.getInstance().getStandardIn().getProcessInputStreamSource();
-        } else {
-            inputStreamSource = processInputStream.getProcessInputStreamSource();
-        }
-
-        if (inputStreamSource != null) {
-            switch (inputStreamSource) {
-                case DISCARD:
-                    LOG.debug("Discard input stream.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(basePath, systemCommandGroup, inputStreamSource)));
-                    break;
-                case PIPE:
-                    LOG.debug("Pipe input stream.");
-                    processBuilder.redirectInput(Redirect.PIPE);
-                    break;
-                case FILE:
-                    LOG.debug("File input stream.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(basePath, systemCommandGroup, inputStreamSource)));
-                    break;
-                case BUFFER:
-                    LOG.debug("Read input stream from buffer.");
-                    processBuilder.redirectInput(Redirect.from(writeInputFile(basePath, systemCommandGroup, inputStreamSource)));
-                    break;
-                case INHERIT:
-                default:
-                    LOG.debug("Inherit input stream.");
-                    processBuilder.redirectInput(Redirect.INHERIT);
-                    break;
-            }
-        }
-
-        if (processOut == null) {
-            LOG.debug("Discard output stream.");
-            processBuilder.redirectOutput(Redirect.DISCARD);
-        } else {
-            processOut.start(systemCommandGroup);
-        }
-
-        if (processErr == null) {
-            LOG.debug("Discard error output stream.");
-            processBuilder.redirectError(Redirect.DISCARD);
-        } else {
-            processErr.start(systemCommandGroup);
-        }
     }
 
     
