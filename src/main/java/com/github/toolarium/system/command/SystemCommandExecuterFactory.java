@@ -112,7 +112,7 @@ public final class SystemCommandExecuterFactory {
      * @return the system command executer
      */
     public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommand... systemCommand) {
-        ISystemCommandGroupList s = new SystemCommandGroupList();
+        SystemCommandGroupList s = new SystemCommandGroupList();
         s.add(systemCommand);
         return createSystemCommandExecuter(s);
     }
@@ -124,12 +124,13 @@ public final class SystemCommandExecuterFactory {
      * @param systemCommandGroup the system command group
      * @return the system command executer
      */
+    /*
     public ISystemCommandExecuter createSystemCommandExecuter(ISystemCommandGroup systemCommandGroup) {
-        ISystemCommandGroupList s = new SystemCommandGroupList();
+        SystemCommandGroupList s = new SystemCommandGroupList();
         s.add(systemCommandGroup);
         return createSystemCommandExecuter(s);
     }
-
+*/
     
     /**
      * Create a system command executer

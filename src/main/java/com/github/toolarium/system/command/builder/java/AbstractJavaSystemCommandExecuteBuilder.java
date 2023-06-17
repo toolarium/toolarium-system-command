@@ -6,7 +6,7 @@
 package com.github.toolarium.system.command.builder.java;
 
 import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import com.github.toolarium.system.command.util.OSUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public AbstractJavaSystemCommandExecuteBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public AbstractJavaSystemCommandExecuteBuilder(SystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
         this.jrePath = null;
         this.javaMemorySettings = new ArrayList<>();
@@ -338,11 +338,11 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
 
 
     /**
-     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.SystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
-    protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
+    protected void childBuild(SystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
         if (jrePath != null && !jrePath.isBlank()) {
             command(jrePath.trim() + "/bin/" + javaExecutable);        
         } else {

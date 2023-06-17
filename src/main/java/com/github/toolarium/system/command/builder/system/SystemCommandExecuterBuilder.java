@@ -5,7 +5,6 @@
  */
 package com.github.toolarium.system.command.builder.system;
 
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
 import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,7 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public SystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public SystemCommandExecuterBuilder(SystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
     }
 
@@ -187,6 +186,6 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
      * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
      */
     @Override
-    protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
+    protected void childBuild(SystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
     }
 }

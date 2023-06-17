@@ -5,11 +5,9 @@
  */
 package com.github.toolarium.system.command.dto.list;
 
-import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.dto.group.ISystemCommandGroup;
 import java.time.Instant;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -26,31 +24,7 @@ public interface ISystemCommandGroupList {
      * @return the id of this system command list
      */
     String getId();
-    
-    
-    /**
-     * Add system command list to the current group
-     *
-     * @param systemCommands the system command list to the current group
-     */
-    void add(List<? extends ISystemCommand> systemCommands);
-
-    
-    /**
-     * Add system command list to the current group
-     *
-     * @param systemCommands the system command list to the current group 
-     */
-    void add(ISystemCommand... systemCommands);
-
- 
-    /**
-     * Add a system command group
-     *
-     * @param systemCommandGroup the system command group
-     */
-    void add(ISystemCommandGroup systemCommandGroup);
-    
+        
     
     /**
      * Check if this system command group list contains parts which runs as a script.
@@ -63,32 +37,18 @@ public interface ISystemCommandGroupList {
 
     
     /**
-     * Force to run as script.
-     */
-    void forceRunAsScript();
-
-    
-    /**
-     * Lock the system command group list (default timeout).
-     */
-    void lock();
-
-    
-    /**
-     * Lock the system command group list.
-     *
-     * @param lockTimeoutInSeconds the period in seconds. In case of null the duration will be reset with value of last lock timeout.
-     */
-    void lock(Integer lockTimeoutInSeconds);
-
-    
-    /**
      * Check if the system command group list locked or not
      *
      * @return the lock timeout in seconds
      */
     boolean isLocked();
     
+    
+    /**
+     * Reset the lock.
+     */
+    void resetLock();
+
     
     /**
      * Get the lock timeout

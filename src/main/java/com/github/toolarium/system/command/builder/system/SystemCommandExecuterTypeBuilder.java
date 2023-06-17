@@ -10,7 +10,7 @@ import com.github.toolarium.system.command.builder.ISystemCommandExecuterTypeBui
 import com.github.toolarium.system.command.builder.docker.DockerSystemCommandExecuterBuilder;
 import com.github.toolarium.system.command.builder.java.JarSystemCommandExecuterBuilder;
 import com.github.toolarium.system.command.builder.java.JavaSystemCommandExecuterBuilder;
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 
 
 /**
@@ -19,7 +19,7 @@ import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
  * @author patrick
  */
 public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterTypeBuilder {
-    private ISystemCommandGroupList systemCommandGroupList;
+    private SystemCommandGroupList systemCommandGroupList;
     
 
     /**
@@ -27,7 +27,7 @@ public class SystemCommandExecuterTypeBuilder implements ISystemCommandExecuterT
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public SystemCommandExecuterTypeBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public SystemCommandExecuterTypeBuilder(SystemCommandGroupList systemCommandGroupList) {
         this.systemCommandGroupList = systemCommandGroupList;
     }
 

@@ -85,11 +85,10 @@ public class SystemCommandGroup implements ISystemCommandGroup, Serializable {
         return systemCommandList.size() > 1;
     }
 
-
+    
     /**
-     * @see com.github.toolarium.system.command.dto.group.ISystemCommandGroup#forceRunAsScript()
+     * Force to run as script.
      */
-    @Override
     public void forceRunAsScript() {
         this.runAsScript = Boolean.TRUE;
     }

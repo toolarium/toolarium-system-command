@@ -27,7 +27,7 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
     private static final int ONE_HOUR = 60 * 60;
     private static final long serialVersionUID = -7355466348182867999L;
     private final String id;
-    private List<ISystemCommandGroup> systemCommandGroupList;
+    private List<SystemCommandGroup> systemCommandGroupList;
     private int lockTimeoutInSeconds;
     private Instant lockTimeout;
 
@@ -53,20 +53,22 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(com.github.toolarium.system.command.dto.ISystemCommand[])
+     * Add system command list to the current group
+     *
+     * @param systemCommands the system command list to the current group 
      */
-    @Override
     public void add(ISystemCommand... systemCommands) {
         add(Arrays.asList(systemCommands));
     }
 
     
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(java.util.List)
+     * Add system command list to the current group
+     *
+     * @param systemCommands the system command list to the current group
      */
-    @Override
     public void add(List<? extends ISystemCommand> systemCommands) {
-        final ISystemCommandGroup systemCommandGroup;
+        final SystemCommandGroup systemCommandGroup;
         if (systemCommandGroupList.isEmpty()) {
             systemCommandGroup = new SystemCommandGroup();
             add(systemCommandGroup);
@@ -81,10 +83,11 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
         
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#add(com.github.toolarium.system.command.dto.group.ISystemCommandGroup)
+     * Add a system command group
+     *
+     * @param systemCommandGroup the system command group
      */
-    @Override
-    public void add(ISystemCommandGroup systemCommandGroup) {
+    public void add(SystemCommandGroup systemCommandGroup) {
         systemCommandGroupList.add(systemCommandGroup);
     }
 
@@ -110,29 +113,28 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#forceRunAsScript()
+     * Force to run as script.
      */
-    @Override
     public void forceRunAsScript() {
         if (systemCommandGroupList != null && !systemCommandGroupList.isEmpty()) {
             systemCommandGroupList.get(systemCommandGroupList.size() - 1).forceRunAsScript();
         }
     }
 
-
+    
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#lock()
+     * Lock the system command group list (default timeout).
      */
-    @Override
     public void lock() {
         lock(lockTimeoutInSeconds);
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#lock(java.lang.Integer)
+     * Lock the system command group list.
+     *
+     * @param lockTimeoutInSeconds the period in seconds. In case of null the duration will be reset with value of last lock timeout.
      */
-    @Override
     public void lock(Integer lockTimeoutInSeconds) {
         if (lockTimeoutInSeconds == null) {
             this.lockTimeout = null;
@@ -163,6 +165,15 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
 
     
     /**
+     * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#resetLock()
+     */
+    @Override
+    public void resetLock() {
+        lock(null);
+    }
+
+    
+    /**
      * @see com.github.toolarium.system.command.dto.list.ISystemCommandGroupList#newGroup()
      */
     @Override
@@ -180,7 +191,19 @@ public class SystemCommandGroupList implements ISystemCommandGroupList, Serializ
      */
     @Override
     public Iterator<ISystemCommandGroup> iterator() {
-        return systemCommandGroupList.iterator();
+        return new Iterator<ISystemCommandGroup>() {
+            private Iterator<SystemCommandGroup> it = systemCommandGroupList.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public ISystemCommandGroup next() {
+                return it.next();
+            }
+        };
     }
 
     

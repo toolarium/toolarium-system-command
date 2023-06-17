@@ -45,7 +45,7 @@ public class SystemCommandGroupListTest {
         Thread.sleep(1000);
         
         // reset lock timeout
-        systemCommandGroupList.lock(null);
+        systemCommandGroupList.resetLock();
 
         assertNotNull(systemCommandGroupList.getLockTimeout());
         assertTrue(Instant.now().isBefore(systemCommandGroupList.getLockTimeout()));

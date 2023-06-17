@@ -6,7 +6,7 @@
 package com.github.toolarium.system.command.builder.docker;
 
 import com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder;
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import com.github.toolarium.system.command.util.OSUtil;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
      *
      * @param systemCommandGroupList the system command group list
      */
-    public DockerSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public DockerSystemCommandExecuterBuilder(SystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
         dockerExecutable = "docker";
         dockerCommand = null;
@@ -292,11 +292,11 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
 
     
     /**
-     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.SystemCommandGroupList)
      * @throws IllegalArgumentException In case of an invalid argument
      */
     @Override
-    protected void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
+    protected void childBuild(SystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {
         command(dockerExecutable, dockerExecutable);
         command(dockerCommand, dockerCommand);
 

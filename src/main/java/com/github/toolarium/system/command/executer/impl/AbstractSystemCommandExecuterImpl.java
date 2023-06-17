@@ -209,7 +209,7 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
             }
 
             // restart lock from now
-            systemCommandGroupList.lock(null);
+            systemCommandGroupList.resetLock();
 
             // start liveness thread
             processLiveness = new ProcessLiveness(systemCommandGroupList.getId(), processList, processOut, processErr, scriptPath, systemCommandGroupList.getLockTimeout(), pollTimeout);

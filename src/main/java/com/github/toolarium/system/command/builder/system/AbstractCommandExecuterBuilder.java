@@ -13,7 +13,7 @@ import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.dto.env.IProcessEnvironment;
 import com.github.toolarium.system.command.dto.env.ProcessEnvironment;
 import com.github.toolarium.system.command.dto.group.SystemCommandGroup;
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 import com.github.toolarium.system.command.executer.ISystemCommandExecuter;
 import com.github.toolarium.system.command.util.SystemCommandFactory;
 import java.io.File;
@@ -30,7 +30,7 @@ import java.util.Set;
  * @author patrick
  */
 public abstract class AbstractCommandExecuterBuilder implements ISystemCommandExecuterBuilder {
-    private ISystemCommandGroupList systemCommandGroupList;
+    private SystemCommandGroupList systemCommandGroupList;
     private SystemCommand currentSystemCommand;
     private IProcessEnvironment parentProcessEnvironment;
     private List<String> parentShell;
@@ -41,7 +41,7 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public AbstractCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public AbstractCommandExecuterBuilder(SystemCommandGroupList systemCommandGroupList) {
         this.systemCommandGroupList = systemCommandGroupList;
         this.currentSystemCommand = null;
         this.parentProcessEnvironment = null;
@@ -287,7 +287,7 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      * 
      * @throws IllegalArgumentException In case of invalid parameter combination
      */
-    protected abstract void childBuild(ISystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException;
+    protected abstract void childBuild(SystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException;
     
 
     /**

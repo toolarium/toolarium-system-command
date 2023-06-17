@@ -26,14 +26,6 @@ public interface ISystemCommandGroup {
 
     
     /**
-     * Add a system command 
-     *
-     * @param systemCommand the system command
-     */
-    void add(ISystemCommand systemCommand);
-    
-    
-    /**
      * Returns an iterator over the system command list.
      *
      * @return an iterator over the system command list
@@ -57,12 +49,6 @@ public interface ISystemCommandGroup {
      * @return true if it runs as script
      */
     boolean runAsScript();
-
-    
-    /**
-     * Force to run as script.
-     */
-    void forceRunAsScript();
 
     
     /**

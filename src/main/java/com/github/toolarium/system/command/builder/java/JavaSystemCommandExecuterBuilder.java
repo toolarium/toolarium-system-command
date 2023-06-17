@@ -5,7 +5,7 @@
  */
 package com.github.toolarium.system.command.builder.java;
 
-import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.dto.list.SystemCommandGroupList;
 
 
 /**
@@ -22,7 +22,7 @@ public class JavaSystemCommandExecuterBuilder extends AbstractJavaSystemCommandE
      * 
      * @param systemCommandGroupList the system command group list
      */
-    public JavaSystemCommandExecuterBuilder(ISystemCommandGroupList systemCommandGroupList) {
+    public JavaSystemCommandExecuterBuilder(SystemCommandGroupList systemCommandGroupList) {
         super(systemCommandGroupList);
         this.main = null;
     }
