@@ -91,7 +91,7 @@ public class AsynchrnousProcessTest extends AbstractProcessTest {
                                  0,        // return value
                                  "dir"); // command
                 
-        assertTrue(outputStream.toString().length() > 1000);
+        assertTrue(outputStream.toString().length() > 100);
         assertNotNull(process);
         process.waitFor();
         

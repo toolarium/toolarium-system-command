@@ -9,6 +9,7 @@ package com.github.toolarium.system.command.executer.impl;
 import com.github.toolarium.system.command.dto.ISystemCommand;
 import com.github.toolarium.system.command.dto.SystemCommand;
 import com.github.toolarium.system.command.dto.list.ISystemCommandGroupList;
+import com.github.toolarium.system.command.process.util.ProcessBuilderUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
  * @author patrick
  */
 public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecuterImpl {
+    private static final String TEMP_VARIABLE = "%" + ProcessBuilderUtil.TEMP + "%";
 
     /**
      * Constructor for WindowsSystemCommandExecuterImpl
@@ -32,16 +34,11 @@ public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecu
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellStartCommand(ISystemCommand systemCommand) {
+    public List<String> getShellStartCommand(String id, ISystemCommand systemCommand) {
         List<String> cmdList = new ArrayList<>();
-        String currentUser = System.getProperty("user.name").trim();
-        if (systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank() && !currentUser.equals(systemCommand.getProcessEnvironment().getUser().trim())) {
-            cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
-        }
-
         if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
             if (systemCommand.getProcessEnvironment() != null 
                 && systemCommand.getProcessEnvironment().getOS() != null
@@ -54,15 +51,25 @@ public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecu
             cmdList.addAll(systemCommand.getShell());
         }
 
+        if (systemCommand.getProcessEnvironment().isSudoUser() && systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank()) {
+            cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
+            
+            // enhance to start as minimize
+            systemCommand.getCommandList().add(0, "start /min /wait");
+            systemCommand.getCommandList().add("^>" + TEMP_VARIABLE + "/" + id + ".out");
+            systemCommand.getCommandList().add("2^>" + TEMP_VARIABLE + "/" + id + ".err");
+            systemCommand.getCommandList().add("^& exit");
+        }
+
         return cmdList;
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellEndCommand(ISystemCommand systemCommand) {
+    public List<String> getShellEndCommand(String id, ISystemCommand systemCommand) {
         return null;
     }
 
@@ -100,6 +107,15 @@ public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecu
     @Override
     public String getScriptFileComment() {
         return "::";
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getNotExistEnvironmentVariableCommand(java.lang.String)
+     */
+    @Override
+    public String getNotExistEnvironmentVariableCommand(String envVariable) {
+        return "IF .%" + envVariable + "%==. ";
     }
 
 
@@ -198,6 +214,6 @@ public class WindowsSystemCommandExecuterImpl extends AbstractSystemCommandExecu
      */
     @Override
     public List<String> getSudo(String username) {
-        return Arrays.asList("runas", "/user", "\"" + username + "\"", "/savecred"); 
+        return Arrays.asList("runas", "/user:\"" + username + "\"", "/env", "/savecred"); 
     }
 }

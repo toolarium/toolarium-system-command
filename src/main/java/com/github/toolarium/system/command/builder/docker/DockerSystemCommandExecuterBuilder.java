@@ -242,7 +242,11 @@ public class DockerSystemCommandExecuterBuilder extends AbstractCommandExecuterB
      */
     public DockerSystemCommandExecuterBuilder images() {
         this.dockerCommand = "images";
-        this.name = "*";
+        this.name = "";
+        
+        if (OSUtil.getInstance().isWindows()) {
+            this.name = "*";
+        }
         return this;
     }
 

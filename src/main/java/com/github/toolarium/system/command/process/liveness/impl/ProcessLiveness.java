@@ -9,6 +9,7 @@ import com.github.toolarium.system.command.process.liveness.IProcessLiveness;
 import com.github.toolarium.system.command.process.stream.IProcessOutputStream;
 import com.github.toolarium.system.command.process.stream.util.ProcessStreamUtil;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -57,11 +58,20 @@ public class ProcessLiveness implements IProcessLiveness, Runnable {
         Process process = getProcess();
 
         if (outputStream != null && process != null) {
-            this.outputStream = new ProcessStreamConsumer(new BufferedInputStream(process.getInputStream()), outputStream);
+            File file = null;
+            if (scriptPath != null) {
+                file = new File(scriptPath + "/" + id + ".out");
+            }
+            this.outputStream = new ProcessStreamConsumer(new BufferedInputStream(process.getInputStream()), outputStream, file);
         }
             
         if (errorStream != null && process != null) {
-            this.errorStream = new ProcessStreamConsumer(new BufferedInputStream(process.getErrorStream()), errorStream);
+            File file = null;
+            if (scriptPath != null) {
+                file = new File(scriptPath + "/" + id + ".err");
+            }
+            
+            this.errorStream = new ProcessStreamConsumer(new BufferedInputStream(process.getErrorStream()), errorStream, file);
         }
         
         this.scriptPath = scriptPath;

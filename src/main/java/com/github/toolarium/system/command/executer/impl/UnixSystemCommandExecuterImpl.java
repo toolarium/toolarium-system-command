@@ -32,32 +32,31 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellStartCommand(ISystemCommand systemCommand) {
+    public List<String> getShellStartCommand(String id, ISystemCommand systemCommand) {
         List<String> cmdList = new ArrayList<>();
-        String currentUser = System.getProperty("user.name").trim();
-        if (systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank() && !currentUser.equals(systemCommand.getProcessEnvironment().getUser().trim())) {
-            cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
-        }
-        
         if (systemCommand.getShell() == null || systemCommand.getShell().isEmpty()) {
             cmdList.addAll(Arrays.asList("sh", "-c"));           
         } else {
             cmdList.addAll(systemCommand.getShell());
         }
+
+        if (systemCommand.getProcessEnvironment().isSudoUser() && systemCommand.getProcessEnvironment().getUser() != null && !systemCommand.getProcessEnvironment().getUser().isBlank()) {  
+            cmdList.addAll(getSudo(systemCommand.getProcessEnvironment().getUser().trim()));
+        }
         
         return cmdList;
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellEndCommand(ISystemCommand systemCommand) {
-        return null; //Arrays.asList(")");
+    public List<String> getShellEndCommand(String id, ISystemCommand systemCommand) {
+        return null;
     }
 
 
@@ -94,6 +93,15 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
     @Override
     public String getScriptFileComment() {
         return "#";
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getNotExistEnvironmentVariableCommand(java.lang.String)
+     */
+    @Override
+    public String getNotExistEnvironmentVariableCommand(String envVariable) {
+        return "! [ -n \"${" + envVariable + "}\" ] && ";
     }
 
 
@@ -192,6 +200,6 @@ public class UnixSystemCommandExecuterImpl extends AbstractSystemCommandExecuter
      */
     @Override
     public List<String> getSudo(String username) {
-        return Arrays.asList("sudo", "-u", "\"" + username + "\""); 
+        return Arrays.asList("su", "\"" + username + "\""); 
     }
 }

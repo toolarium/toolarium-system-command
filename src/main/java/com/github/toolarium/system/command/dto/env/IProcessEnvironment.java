@@ -23,6 +23,14 @@ public interface IProcessEnvironment {
 
     
     /**
+     * True if the user is set to run as a sudo user.
+     * 
+     *  @return true if the user is set to run as a sudo user.
+     */
+    boolean isSudoUser();
+
+    
+    /**
      * Get the working path
      * 
      * @return the working path

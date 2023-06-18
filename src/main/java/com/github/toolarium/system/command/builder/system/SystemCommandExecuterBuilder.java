@@ -181,9 +181,9 @@ public final class SystemCommandExecuterBuilder extends AbstractCommandExecuterB
         return (SystemCommandExecuterBuilder)super.lock(lockTimeoutInSeconds);
     }
 
-    
+
     /**
-     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.ISystemCommandGroupList)
+     * @see com.github.toolarium.system.command.builder.system.AbstractCommandExecuterBuilder#childBuild(com.github.toolarium.system.command.dto.list.SystemCommandGroupList)
      */
     @Override
     protected void childBuild(SystemCommandGroupList systemCommandGroupList) throws IllegalArgumentException {

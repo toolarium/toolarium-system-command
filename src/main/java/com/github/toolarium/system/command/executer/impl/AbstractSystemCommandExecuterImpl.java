@@ -250,6 +250,10 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      */
     @Override
     public void writeToFile(Path file, String content) throws IOException {
+        if (content == null) {
+            return;
+        }
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("Write to file [" + file + "]:\n" + ProcessStreamUtil.getInstance().removeCR(content));
         }
@@ -266,6 +270,16 @@ public abstract class AbstractSystemCommandExecuterImpl implements ISystemComman
      */
     protected String prepareDuration(IAsynchronousProcess process) {
         return ProcessBuilderUtil.getInstance().prepareDuration(process);
+    }
+    
+    
+    /**
+     * Get the system command group list
+     *
+     * @return the system command group list
+     */
+    protected ISystemCommandGroupList getSystemCommandGroupList() {
+        return systemCommandGroupList;
     }
 }
 

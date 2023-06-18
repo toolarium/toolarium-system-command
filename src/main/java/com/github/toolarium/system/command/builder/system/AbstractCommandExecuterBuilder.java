@@ -46,7 +46,6 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
         this.currentSystemCommand = null;
         this.parentProcessEnvironment = null;
         this.parentShell = null;
-
     }
 
     
@@ -101,6 +100,7 @@ public abstract class AbstractCommandExecuterBuilder implements ISystemCommandEx
      */
     @Override
     public ISystemCommandExecuterBuilder user(String user) {
+        systemCommandGroupList.forceRunAsScript();
         getProcessEnvironment().setUser(user);
         return this;
     }

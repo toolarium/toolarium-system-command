@@ -53,20 +53,20 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellStartCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellStartCommand(ISystemCommand systemCommand) {
-        return handleNull(systemCommandExecuterPlatformSupport.getShellStartCommand(systemCommand));
+    public List<String> getShellStartCommand(String id, ISystemCommand systemCommand) {
+        return handleNull(systemCommandExecuterPlatformSupport.getShellStartCommand(id, systemCommand));
     }
 
 
     /**
-     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getShellEndCommand(java.lang.String, com.github.toolarium.system.command.dto.ISystemCommand)
      */
     @Override
-    public List<String> getShellEndCommand(ISystemCommand systemCommand) {
-        return handleNull(systemCommandExecuterPlatformSupport.getShellEndCommand(systemCommand));
+    public List<String> getShellEndCommand(String id, ISystemCommand systemCommand) {
+        return handleNull(systemCommandExecuterPlatformSupport.getShellEndCommand(id, systemCommand));
     }
 
 
@@ -112,6 +112,15 @@ public class SystemCommandExecuterPlatformSupportWrapper implements ISystemComma
     @Override
     public String getEnvironmentUnsetCommand() {
         return handleNull(systemCommandExecuterPlatformSupport.getEnvironmentUnsetCommand());
+    }
+
+    
+    /**
+     * @see com.github.toolarium.system.command.executer.ISystemCommandExecuterPlatformSupport#getNotExistEnvironmentVariableCommand(java.lang.String)
+     */
+    @Override
+    public String getNotExistEnvironmentVariableCommand(String envVariable) {
+        return handleNull(systemCommandExecuterPlatformSupport.getNotExistEnvironmentVariableCommand(envVariable));
     }
 
     

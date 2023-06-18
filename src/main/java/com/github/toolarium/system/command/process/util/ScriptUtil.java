@@ -207,12 +207,20 @@ public final class ScriptUtil {
      * @param file the file
      * @throws IOException In case of an I/O issue
      */
-    public void createScriptFile(ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport, Path file)
-            throws IOException {
+    public void createScriptFile(ISystemCommandExecuterPlatformSupport systemCommandExecuterPlatformSupport, Path file) throws IOException {
         if (systemCommandExecuterPlatformSupport.getScriptFileHeader() != null && !systemCommandExecuterPlatformSupport.getScriptFileHeader().isBlank()) {
             systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getScriptFileHeader() + systemCommandExecuterPlatformSupport.getEndOfLine());
         }
+        
+        // set env variable in case it don't exist for debug purpose
+        systemCommandExecuterPlatformSupport.writeToFile(file, systemCommandExecuterPlatformSupport.getNotExistEnvironmentVariableCommand(ProcessBuilderUtil.TEMP) 
+                                                             + systemCommandExecuterPlatformSupport.getEnvironmentSetCommand() + ProcessBuilderUtil.TEMP 
+                                                             + systemCommandExecuterPlatformSupport.getEnvironmentAssignCommand() 
+                                                             + file.getParent().toString() 
+                                                             + systemCommandExecuterPlatformSupport.getEnvironmentAssignCommandEnd() 
+                                                             + systemCommandExecuterPlatformSupport.getEndOfLine());
 
+        
         if (systemCommandExecuterPlatformSupport.getScriptFileComment() != null && !systemCommandExecuterPlatformSupport.getScriptFileComment().isBlank()) {
             final String comment = systemCommandExecuterPlatformSupport.getScriptFileComment() + SystemCommand.SPACE;
             final String line = prepareString(systemCommandExecuterPlatformSupport.getScriptFileComment(), 80);

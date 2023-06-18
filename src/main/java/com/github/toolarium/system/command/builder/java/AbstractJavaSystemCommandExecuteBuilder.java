@@ -367,11 +367,10 @@ public abstract class AbstractJavaSystemCommandExecuteBuilder extends AbstractCo
         }
 
         if (systemProperties != null && !systemProperties.isEmpty()) {
-            boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
             boolean encapsulateExpression = false;
             boolean encapsulateValue = false;
             
-            if (isWindows) {
+            if (OSUtil.getInstance().isWindows()) {
                 encapsulateExpression = true;
             } else {
                 encapsulateValue = true;

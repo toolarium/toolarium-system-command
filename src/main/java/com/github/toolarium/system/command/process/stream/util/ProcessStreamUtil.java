@@ -183,6 +183,10 @@ public final class ProcessStreamUtil {
      * @return the result
      */
     public String removeCR(String input) {
+        if (input == null) {
+            return null;
+        }
+        
         return input.replace("\r", "");
     }
 

@@ -215,7 +215,7 @@ public class Slf4jProcessOutputStream implements IProcessOutputStream {
 
 
     /**
-     * @see com.github.toolarium.system.command.process.stream.IProcessOutputStream#start(com.github.toolarium.system.command.dto.ISystemCommand)
+     * @see com.github.toolarium.system.command.process.stream.IProcessOutputStream#start(com.github.toolarium.system.command.dto.group.ISystemCommandGroup)
      */
     @Override
     public void start(ISystemCommandGroup systemCommandGroup) {

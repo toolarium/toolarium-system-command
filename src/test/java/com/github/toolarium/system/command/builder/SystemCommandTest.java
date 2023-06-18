@@ -18,6 +18,7 @@ import com.github.toolarium.system.command.process.stream.IProcessInputStream;
 import com.github.toolarium.system.command.process.stream.ProcessStreamFactory;
 import com.github.toolarium.system.command.process.stream.output.ProcessBufferOutputStream;
 import com.github.toolarium.system.command.util.OSUtil;
+import com.github.toolarium.system.command.util.SystemCommandFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,8 +55,6 @@ public class SystemCommandTest extends AbstractProcessTest {
         assertNotNull(mySyncProcess.getOutput());
         assertNotNull(mySyncProcess.getErrorOutput());
         
-        
-        
         IProcess process2 = SystemCommandExecuterFactory.builder().system().command(DIR).build().runSynchronous(10 /* numberOfSecondsToWait */);
         assertNotNull(process2);
     }
@@ -84,7 +83,6 @@ public class SystemCommandTest extends AbstractProcessTest {
         assertFalse(output.toString().isBlank());
         assertNotNull(output.toString());
         assertTrue(errOutput.toString().isBlank());
-        
     }
 
     
@@ -115,7 +113,7 @@ public class SystemCommandTest extends AbstractProcessTest {
     @Test
     public void usageAsyncPipe() throws InterruptedException {
         String listDirectory = "ls -a";
-        String grep = "grep \"\\,\\.\"";
+        String grep = "grep \"\\.\\.\"";
         if (OSUtil.getInstance().isWindows()) {
             listDirectory = DIR;
             grep = "findstr /C:\"..\"";
@@ -140,6 +138,34 @@ public class SystemCommandTest extends AbstractProcessTest {
         assertTrue(errOutput.toString().isBlank());
     }
 
+    
+    /**
+     * Shows the usage
+     * 
+     * @throws InterruptedException in case of a thread interruption
+     */
+    @Test
+    public void usageDifferentUser() throws InterruptedException {
+        IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+        ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+        IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
+            .system().command(DIR).user("patrick").onSuccess()
+            .system().command(SystemCommandFactory.getInstance().createSleepCommand(2))
+            .build()
+            .runAsynchronous(processInputStream, output, errOutput);
+        assertNotNull(myAsyncProcess.getInputStream()); // the input stream where we can bypass
+        myAsyncProcess.waitFor();
+        assertNotNull(myAsyncProcess);
+        assertNotNull(myAsyncProcess.getExitValue());
+        //assertNotNull(myAsyncProcess.getTotalCpuDuration());
+        LOG.debug(output.toString());
+        // TODO: 
+        //assertFalse(output.toString().isBlank());
+        //assertNotNull(output.toString());
+        //assertTrue(errOutput.toString().isBlank());
+    }
+
 
     /**
      * Manual process builder test
@@ -151,7 +177,7 @@ public class SystemCommandTest extends AbstractProcessTest {
     public void manualAsyncPipeTest() throws IOException, InterruptedException {
         String[] shell = new String[] {"sh", "-c" };
         String listDirectory = "ls -a";
-        String grep = "grep \"\\,\\.\"";
+        String grep = "grep \"\\.\\.\"";
         if (OSUtil.getInstance().isWindows()) {
             shell = new String[] {"cmd.exe", "/c"};
             listDirectory = DIR;

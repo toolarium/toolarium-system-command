@@ -21,18 +21,20 @@ public interface ISystemCommandExecuterPlatformSupport {
     /**
      * Get the start shell command
      * 
+     * @param id the id of this command group
      * @param systemCommand the system command
      * @return the shell command
      */
-    List<String> getShellStartCommand(ISystemCommand systemCommand);
+    List<String> getShellStartCommand(String id, ISystemCommand systemCommand);
 
     /**
      * Get the end shell command
      * 
+     * @param id the id of this command group
      * @param systemCommand the system command
      * @return the shell command
      */
-    List<String> getShellEndCommand(ISystemCommand systemCommand);
+    List<String> getShellEndCommand(String id, ISystemCommand systemCommand);
 
     
     /**
@@ -65,6 +67,15 @@ public interface ISystemCommandExecuterPlatformSupport {
      * @return the script file comment
      */
     String getScriptFileComment();
+
+    
+    /**
+     * Get the if not exist environment variable command
+     *
+     * @param envVariable the environment variable
+     * @return the if exist environment variable command
+     */
+    String getNotExistEnvironmentVariableCommand(String envVariable);
 
     
     /**

@@ -20,6 +20,7 @@ import java.util.Objects;
 public class ProcessEnvironment implements IProcessEnvironment, Serializable {
     private static final long serialVersionUID = -1324761748179122695L;
     private String user;
+    private Boolean isSudoUser;
     private String workingPath;
     private Map<String, String> environmentVariables;
     private String os;
@@ -31,8 +32,11 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
      * Constructor for ProcessEnvironment
      */
     public ProcessEnvironment() {
-        user = System.getProperty("user.name").trim();
-                
+        isSudoUser = false;
+        if (System.getProperty("user.name") != null) {
+            user = System.getProperty("user.name").trim();
+        }
+        
         workingPath = ".";
         if (System.getProperty("user.dir") != null) {
             workingPath = new File(System.getProperty("user.dir").trim()).getPath();
@@ -63,6 +67,16 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
      */
     public void setUser(String user) {
         this.user = user;
+        this.isSudoUser = true;
+    }
+
+
+    /**
+     * @see com.github.toolarium.system.command.dto.env.IProcessEnvironment#isSudoUser()
+     */
+    @Override
+    public boolean isSudoUser() {
+        return isSudoUser;
     }
 
 
@@ -165,7 +179,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(user, workingPath, environmentVariables);
+        return Objects.hash(user, isSudoUser, workingPath, environmentVariables);
     }
 
 
@@ -188,6 +202,7 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
         
         ProcessEnvironment other = (ProcessEnvironment) obj;
         return Objects.equals(user, other.user)
+                && Objects.equals(isSudoUser, other.isSudoUser)
                 && Objects.equals(workingPath, other.workingPath)
                 && Objects.equals(environmentVariables, other.environmentVariables);
     }
@@ -198,6 +213,6 @@ public class ProcessEnvironment implements IProcessEnvironment, Serializable {
      */
     @Override
     public String toString() {
-        return "ProcessEnvironment [user=" + user + ", workingPath=" + workingPath + ", environmentVariables=" + environmentVariables +  "]";
+        return "ProcessEnvironment [user=" + user + ", isSudoUser=" + isSudoUser + ", workingPath=" + workingPath + ", environmentVariables=" + environmentVariables +  "]";
     }
 }
