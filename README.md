@@ -104,3 +104,20 @@ IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
     .runAsynchronous(output, errOutput);
 myAsyncProcess.waitFor();
 ```
+
+Start a jar process asynchronous:
+
+```java
+ProcessBufferOutputStream output = new ProcessBufferOutputStream();
+ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
+    .jar("build/libs/toolarium-system-command-0.9.0-test.jar")
+        .inheritJre()
+        .environmentVariable("ENV_KEY", "env value")
+        .javaMemory("256M", "1024M")
+        .systemProperty("mySystemProperty", "system property value")
+        .parameter("-param1").parameter("-param2=true")
+    .build()
+    .runAsynchronous(output, errOutput);
+myAsyncProcess.waitFor();
+```
