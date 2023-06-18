@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/github/license/toolarium/toolarium-system-command)](https://github.com/toolarium/toolarium-system-command/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-system-command/0.7.0)](https://search.maven.org/artifact/com.github.toolarium/toolarium-system-command/0.7.0/jar)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-system-command/0.9.0)](https://search.maven.org/artifact/com.github.toolarium/toolarium-system-command/0.9.0/jar)
 [![javadoc](https://javadoc.io/badge2/com.github.toolarium/toolarium-system-command/javadoc.svg)](https://javadoc.io/doc/com.github.toolarium/toolarium-system-command)
 
 # toolarium-jwebserver
@@ -20,7 +20,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ```groovy
 dependencies {
-    implementation "com.github.toolarium:toolarium-system-command:0.7.0"
+    implementation "com.github.toolarium:toolarium-system-command:0.9.0"
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 <dependency>
     <groupId>com.github.toolarium</groupId>
     <artifactId>toolarium-system-command</artifactId>
-    <version>0.7.0</version>
+    <version>0.9.0</version>
 </dependency>
 ```
 
@@ -47,12 +47,13 @@ Start a process asynchronous and get output streams and inherit input stream whi
 
 
 ```java
-ProcessBufferOutputStream output = new ProcessBufferOutputStream();
-ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+IProcessInputStream processInputStream = ProcessStreamFactory.getInstance().getStandardIn();
+ProcessBufferOutputStream output = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
+ProcessBufferOutputStream errOutput = ProcessStreamFactory.getInstance().getProcessBufferOutputStream();
 IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
     .system().command("dir")
     .build()
-    .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+    .runAsynchronous(processInputStream, output, errOutput);
 myAsyncProcess.waitFor();
 ```
 
@@ -63,7 +64,7 @@ Start a process asynchronous silently:
 IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
     .system().command("dir")
     .build()
-    .runAsynchronous(ProcessInputStreamSource.INHERIT, null, null);
+    .runAsynchronous(ProcessStreamFactory.getInstance().getStandardIn(), null, null);
 myAsyncProcess.waitFor();
 ```
 
@@ -74,12 +75,32 @@ ProcessBufferOutputStream output = new ProcessBufferOutputStream();
 ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
 IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
     .java("com.github.toolarium.system.command.TestMain")
-        .environmentVariable("CLASSPATH", "build/classes/java/test")
+        .inheritJre()
+        .inheritClassPath()
         .environmentVariable("ENV_KEY", "env value")
         .javaMemory("256M", "1024M")
         .systemProperty("mySystemProperty", "system property value")
         .parameter("-param1").parameter("-param2=true")
     .build()
-    .runAsynchronous(ProcessInputStreamSource.INHERIT, output, errOutput);
+    .runAsynchronous(output, errOutput);
+myAsyncProcess.waitFor();
+```
+
+Start a java process and set the classpath:
+
+```java
+ProcessBufferOutputStream output = new ProcessBufferOutputStream();
+ProcessBufferOutputStream errOutput = new ProcessBufferOutputStream();
+IAsynchronousProcess myAsyncProcess = SystemCommandExecuterFactory.builder()
+    .java("com.github.toolarium.system.command.TestMain")
+        .inheritJre()
+        .classPath("build/classes/java/test")
+        .classPath("build/classes/java/main") 
+        .environmentVariable("ENV_KEY", "env value")
+        .javaMemory("256M", "1024M")
+        .systemProperty("mySystemProperty", "system property value")
+        .parameter("-param1").parameter("-param2=true")
+    .build()
+    .runAsynchronous(output, errOutput);
 myAsyncProcess.waitFor();
 ```
