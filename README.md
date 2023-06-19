@@ -2,7 +2,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-system-command/0.9.0)](https://search.maven.org/artifact/com.github.toolarium/toolarium-system-command/0.9.0/jar)
 [![javadoc](https://javadoc.io/badge2/com.github.toolarium/toolarium-system-command/javadoc.svg)](https://javadoc.io/doc/com.github.toolarium/toolarium-system-command)
 
-# toolarium-jwebserver
+# toolarium-system-command
 
 Implements a simple java library which abstract system calls.
 
