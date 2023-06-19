@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -112,6 +114,7 @@ public class ScriptUtilTest {
         Thread.sleep(500);
 
         list = ScriptUtil.getInstance().selectInvalidProcessDirectories(pidFileFolder, 100, 500);
+        Collections.sort(list);
         assertEquals(Arrays.asList(pidFile1.getParent(), pidFile2.getParent(), pidFile4.getParent()), list);
     }
 }
