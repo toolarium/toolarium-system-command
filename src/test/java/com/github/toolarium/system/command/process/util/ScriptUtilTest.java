@@ -108,15 +108,14 @@ public class ScriptUtilTest {
         Thread.sleep(110);
 
         List<Path> list = ScriptUtil.getInstance().selectInvalidProcessDirectories(pidFileFolder, 100, 500);
+        Collections.sort(list);
         assertEquals(Arrays.asList(pidFile1.getParent(), pidFile2.getParent()), list);
 
         Thread.sleep(500);
 
         list = ScriptUtil.getInstance().selectInvalidProcessDirectories(pidFileFolder, 100, 500);
         Collections.sort(list);
-        List<Path> referenceList = Arrays.asList(pidFile2.getParent(), pidFile1.getParent(), pidFile4.getParent());
-        Collections.sort(referenceList);
-        assertEquals(referenceList, list);
+        assertEquals(Arrays.asList(pidFile2.getParent(), pidFile1.getParent(), pidFile4.getParent()), list);
     }
 }
 
