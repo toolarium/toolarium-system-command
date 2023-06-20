@@ -114,7 +114,7 @@ public class ScriptUtilTest {
 
         list = ScriptUtil.getInstance().selectInvalidProcessDirectories(pidFileFolder, 100, 500);
         Collections.sort(list);
-        List<Path> referenceList = Arrays.asList(pidFile1.getParent(), pidFile2.getParent(), pidFile4.getParent());
+        List<Path> referenceList = Arrays.asList(pidFile2.getParent(), pidFile1.getParent(), pidFile4.getParent());
         Collections.sort(referenceList);
         assertEquals(referenceList, list);
     }
